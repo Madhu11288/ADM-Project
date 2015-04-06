@@ -1,3 +1,7 @@
 redis-storm/.idea/*
 redis-storm/*.iml
 redis-storm/target/*
+twitter-aerospike/.classpath
+twitter-aerospike/target/*
+twitter-aerospike/.project
+twitter-aerospike/.settings/*
