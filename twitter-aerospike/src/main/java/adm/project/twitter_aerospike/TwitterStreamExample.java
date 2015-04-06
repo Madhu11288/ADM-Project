@@ -94,7 +94,7 @@ public class TwitterStreamExample {
     			//log.info("created index");
                 try{
 
-                    Key key = new Key(namespace, setName, tweetId);
+                    Key key = new Key(namespace, setName, twitterUserName);
                     Bin bin1 = new Bin(USER_NAME_BIN,twitterUserName);
                     Bin bin2 = new Bin(TWEET_TEXT_BIN,content);
                     Bin bin3 = new Bin(TWEET_LOCATION_BIN,geoLocation);
