@@ -9,7 +9,7 @@ import com.aerospike.client.policy.WritePolicy;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
-
+import java.util.Date;
 
 
 /**
@@ -70,15 +70,31 @@ public class TwitterStream {
 
                 // gets Username
                 String twitterUserName = status.getUser().getScreenName();
-                System.out.println(twitterUserName);
+                System.out.println( twitterUserName);
                 String profileLocation = user.getLocation();
-                System.out.println(profileLocation);
-                long tweetId = status.getId();
-                System.out.println(tweetId);
+                System.out.println( profileLocation);
+                String geoLocation = status.getGeoLocation().toString();
+                System.out.println( geoLocation);
+                //long tweetId = status.getId();
+                //System.out.println(tweetId);
                 String content = status.getText();
-                System.out.println(content + "\n");
 
-                try{
+                if(content.length() > 0)
+                    System.out.println("Tweet = " + content + "\n");
+                else
+                    System.out.println("No twwet text");
+                Date createdDate =  status.getCreatedAt();
+                System.out.println("Created date = " + createdDate);
+                int retweetCount = status.getRetweetCount();
+                System.out.println("Retweet count = " + retweetCount);
+                HashtagEntity[] htEntity = status.getHashtagEntities();
+                for (HashtagEntity ht : htEntity){
+
+                    System.out.println("hashtag entities = " + ht.getText());
+                }
+                System.out.println("-------------------------------------------------");
+
+                /*try{
 
                     Key k = new Key(ASPnameSp, ASPset, twitterUserName);
                     Bin bin = new Bin(ASPbin, content);
@@ -91,6 +107,7 @@ public class TwitterStream {
                     System.out.println("Aerospike Write error !!! ");
                     System.exit(-1);
                 }
+                */
 
             }
 
