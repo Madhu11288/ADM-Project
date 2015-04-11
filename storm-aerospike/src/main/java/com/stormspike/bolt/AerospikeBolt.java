@@ -1,8 +1,4 @@
-package storm.contrib.aerospike.bolt;
-
-/**
- * Created by tvsamartha on 4/9/15.
- */
+package com.stormspike.bolt;
 
 import java.util.HashSet;
 import java.util.Map;

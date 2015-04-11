@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package storm.contrib.aerospike.spout;
+package com.stormspike.spout;
 
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
