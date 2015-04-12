@@ -85,15 +85,15 @@ public class AerospikeBolt extends BaseRichBolt {
         HashtagEntity[] htEntity = status.getHashtagEntities();
 
         //create a set to hold the hashtags so that duplicate hashtags inthe same tweet is eliminated
-        List<String> hashtagSet = new ArrayList<String>();
+        List<String> hashTags = new ArrayList<String>();
 
         if (htEntity.length > 0) {
             for (HashtagEntity ht : htEntity) {
                 System.out.println("ht.getText() = " + ht.getText());
-                hashtagSet.add(ht.getText());
+                hashTags.add(ht.getText());
             }
         }
-        Bin bin5 = new Bin(TWEET_HASHTAG_BIN, Value.get(hashtagSet));
+        Bin bin5 = new Bin(TWEET_HASHTAG_BIN, Value.get(hashTags));
 
         this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin1, bin2, bin3, bin4, bin5);
 
