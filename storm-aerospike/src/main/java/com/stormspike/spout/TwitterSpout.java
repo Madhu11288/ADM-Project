@@ -82,16 +82,8 @@ public class TwitterSpout extends BaseRichSpout {
 		AccessToken token = new AccessToken(accessToken, accessTokenSecret);
 		twitterStream.setOAuthAccessToken(token);
 
-		if (keyWords.length == 0) {
-
-			twitterStream.sample();
-		}
-
-		else {
-
-			FilterQuery query = new FilterQuery().track(keyWords);
-			twitterStream.filter(query);
-		}
+		FilterQuery query = new FilterQuery().track(keyWords);
+		twitterStream.filter(query);
 
 	}
 

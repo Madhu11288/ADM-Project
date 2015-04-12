@@ -21,7 +21,7 @@ public class TweetsTopology {
         String accessTokenSecret = args[3];
 
         String[] arguments = {consumerKey,consumerSecret,accessToken,accessTokenSecret};
-        String[] keyWords = Arrays.copyOfRange(arguments, 4, arguments.length);
+        String[] keyWords = {"Chicago"};
         
         TopologyBuilder builder = new TopologyBuilder();
         
