@@ -5,3 +5,6 @@ twitter-aerospike/.classpath
 twitter-aerospike/target/*
 twitter-aerospike/.project
 twitter-aerospike/.settings/*
+storm-aerospike/.idea/*
+storm-aerospike/*.iml
+storm-aerospike/target/*
