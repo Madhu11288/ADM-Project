@@ -81,7 +81,12 @@ public class AerospikeBolt extends BaseRichBolt {
 
         Bin bin1 = new Bin(USER_NAME_BIN, Value.get(status.getUser().getName()));
         Bin bin2 = new Bin(TWEET_TEXT_BIN, Value.get(status.getText()));
-        Bin bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(status.getGeoLocation()));
+        Bin bin3 ;
+        if(status.getGeoLocation()!=null) {
+            bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(status.getGeoLocation().toString()));
+        } else {
+            bin3 = new Bin(TWEET_LOCATION_BIN, "");
+        }
         Bin bin4 = new Bin(TWEET_DATE_BIN, Value.get(status.getCreatedAt().toString()));
         HashtagEntity[] htEntity = status.getHashtagEntities();
 
