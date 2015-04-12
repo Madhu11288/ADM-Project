@@ -1,21 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.stormspike.spout;
 
 import java.util.Map;
@@ -41,19 +23,19 @@ import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 
 
-public class TwitterSampleSpout extends BaseRichSpout {
+public class TwitterSpout extends BaseRichSpout {
 
-	SpoutOutputCollector _collector;
+	SpoutOutputCollector collector;
 	LinkedBlockingQueue<Status> queue = null;
-	TwitterStream _twitterStream;
+	TwitterStream twitterStream;
 	String consumerKey;
 	String consumerSecret;
 	String accessToken;
 	String accessTokenSecret;
 	String[] keyWords;
 
-	public TwitterSampleSpout(String consumerKey, String consumerSecret,
-			String accessToken, String accessTokenSecret, String[] keyWords) {
+	public TwitterSpout(String consumerKey, String consumerSecret,
+                        String accessToken, String accessTokenSecret, String[] keyWords) {
 		this.consumerKey = consumerKey;
 		this.consumerSecret = consumerSecret;
 		this.accessToken = accessToken;
@@ -61,14 +43,10 @@ public class TwitterSampleSpout extends BaseRichSpout {
 		this.keyWords = keyWords;
 	}
 
-	public TwitterSampleSpout() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public void open(Map conf, TopologyContext context,
 			SpoutOutputCollector collector) {
 		queue = new LinkedBlockingQueue<Status>(1000);
-		_collector = collector;
+		this.collector = collector;
 
 		StatusListener listener = new StatusListener() {
 
@@ -90,7 +68,6 @@ public class TwitterSampleSpout extends BaseRichSpout {
 			}
 
 			public void onStallWarning(StallWarning arg0) {
-				// TODO Auto-generated method stub
 
 			}
 
@@ -123,13 +100,13 @@ public class TwitterSampleSpout extends BaseRichSpout {
 		if (ret == null) {
 			Utils.sleep(50);
 		} else {
-			_collector.emit(new Values(ret));
+			collector.emit(new Values(ret));
 
 		}
 	}
 
 	public void close() {
-		_twitterStream.shutdown();
+		this.twitterStream.shutdown();
 	}
 
 

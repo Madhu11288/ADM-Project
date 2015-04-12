@@ -3,19 +3,16 @@ package com.stormspike.topology;
 import java.util.Arrays;
 
 import com.stormspike.bolt.AerospikeBolt;
-import com.stormspike.spout.TwitterSampleSpout;
+import com.stormspike.spout.TwitterSpout;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
 
+public class TweetsTopology {
 
-public class MyTopology {
-    public static final String AEROSPIKE_HOST = "127.0.0.1";
-    public static final int AEROSPIKE_PORT = 3000;
     public static final String AEROSPIKE_NS = "test";
     public static final String AEROSPIKE_SET = "stormset";
-
 
     public static void main(String[] args) {
         String consumerKey = args[0];
@@ -28,9 +25,9 @@ public class MyTopology {
         
         TopologyBuilder builder = new TopologyBuilder();
         
-        builder.setSpout("twitter", new TwitterSampleSpout(consumerKey, consumerSecret,
+        builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
                                 accessToken, accessTokenSecret, keyWords));
-        builder.setBolt("print", new AerospikeBolt(AEROSPIKE_HOST, AEROSPIKE_PORT, AEROSPIKE_NS, AEROSPIKE_SET))
+        builder.setBolt("print", new AerospikeBolt(AEROSPIKE_NS, AEROSPIKE_SET))
                 .shuffleGrouping("twitter");
 
                 
