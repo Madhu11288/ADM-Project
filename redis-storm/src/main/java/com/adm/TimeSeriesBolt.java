@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class UserBolt implements IRichBolt{
+public class TimeSeriesBolt implements IRichBolt {
     OutputCollector outputCollector;
     JedisPool pool;
     JedisCluster jedis;
@@ -32,7 +32,9 @@ public class UserBolt implements IRichBolt{
     @Override
     public void execute(Tuple tuple) {
         Status tweet = (Status) tuple.getValue(0);
-        jedis.lpush("USER:" + tweet.getUser().getName(), tweet.getText());
+
+        Long time_mills = tweet.getCreatedAt().getTime();
+        jedis.zadd("TWEET_TIME_SERIES", time_mills, tweet.getText());
         counter++;
     }
 

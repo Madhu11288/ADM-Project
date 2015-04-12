@@ -16,6 +16,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class StreamSpout implements IRichSpout {
 
+    private Integer counter = 0;
+
     // Twitter access keys
     private String consumerKey;
     private String consumerSecret;
@@ -65,7 +67,6 @@ public class StreamSpout implements IRichSpout {
     }
 
     public StreamSpout(String consumerKey, String consumerSecret, String accessTokenKey, String accessTokenSecret) {
-
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.accessTokenKey = accessTokenKey;
@@ -79,15 +80,13 @@ public class StreamSpout implements IRichSpout {
 
     @Override
     public Map<String, Object> getComponentConfiguration() {
-        Config config = new Config();
-        config.setMaxTaskParallelism(1);
-        return config;
+        return null;
     }
 
     @Override
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector spoutOutputCollector) {
         this.spoutOutputCollector = spoutOutputCollector;
-        this.queue = new LinkedBlockingQueue<Status>(10000);
+        this.queue = new LinkedBlockingQueue<Status>();
 
         ConfigurationBuilder configuration = new ConfigurationBuilder();
         configuration.setOAuthConsumerKey(this.consumerKey)
@@ -123,7 +122,7 @@ public class StreamSpout implements IRichSpout {
             Utils.sleep(1000);
             return;
         }
-
+        System.out.println("Spout: " + counter++);
         this.spoutOutputCollector.emit(new Values(status));
     }
 

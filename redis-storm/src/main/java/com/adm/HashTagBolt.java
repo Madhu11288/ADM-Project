@@ -5,21 +5,28 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class HashTagBolt implements IRichBolt{
     OutputCollector outputCollector;
-    Jedis jedis;
+    JedisPool pool;
+    JedisCluster jedis;
     Integer counter;
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
-        this.jedis = new Jedis("localhost");
+        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
+        jedis = new JedisCluster(jedisClusterNodes);
         this.counter = 0;
     }
 
@@ -28,14 +35,16 @@ public class HashTagBolt implements IRichBolt{
         Status tweet = (Status) tuple.getValue(0);
         HashtagEntity[] hashtagEntities = tweet.getHashtagEntities();
         if (hashtagEntities.length != 0) {
-            System.out.println("Hash Counter: " + counter);
-            jedis.set(counter.toString() + "-Hash", hashtagEntities[0].getText());
+            for (HashtagEntity hashtagEntity : hashtagEntities) {
+                jedis.incr("HASHTAG:" + hashtagEntity.getText());
+            }
             counter++;
         }
     }
 
     @Override
     public void cleanup() {
+        pool.destroy();
         System.out.println("Hash Bolt Processed: " + this.counter + " number of tweets");
     }
 
