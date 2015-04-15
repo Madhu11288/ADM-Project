@@ -73,23 +73,6 @@ public class HashTagBolt extends BaseRichBolt {
                     bin1 = new Bin(TWEET_COUNT, record.getInt(TWEET_COUNT) + 1);
                 }
                 this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin0, bin1);
-//                FilterOnHashTags filter = new FilterOnHashTags(this.namespace,this.set);
-//                Statement statement = filter.aggregate();
-//                ResultSet rs = this.aerospikeClient.query(null, statement, Value.get(10));
-//
-//                while (rs.next()){
-//                    List<Map<String, Object>> result =  (List<Map<String, Object>>) rs.getObject();
-//                    for (Map<String, Object> element : result){
-//                        System.out.println(element);
-//                    }
-//                }
-//                ResultSet rs = this.aerospikeClient.queryAggregate(null, statement, "filter", "count");
-//                if (rs.next()) {
-//                    Object result = rs.getObject();
-//                    System.out.println("*****************************************************************");
-//                    System.out.println("Count = " + result);
-//                }
-
             }
         }
 
