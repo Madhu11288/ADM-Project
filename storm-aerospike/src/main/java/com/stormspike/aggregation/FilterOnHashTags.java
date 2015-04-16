@@ -1,10 +1,11 @@
 package com.stormspike.aggregation;
 
 
-import com.aerospike.client.*;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Language;
+import com.aerospike.client.Value;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
-import com.aerospike.client.query.Filter;
 import com.aerospike.client.query.ResultSet;
 import com.aerospike.client.query.Statement;
 import com.aerospike.client.task.RegisterTask;
@@ -18,14 +19,11 @@ public class FilterOnHashTags {
     public static final String AEROSPIKE_SET = "stormset-hashtag";
     private static final String TWEET_HASHTAG_BIN = "hashTag";
     private static final String HASHTAG = "hashtag";
-
-
     private static AerospikeClient aerospikeClient;
     private static WritePolicy aerospikeWritePolicy;
 
     private static void aggregate(Statement stmt) {
         ResultSet rs = aerospikeClient.queryAggregate(null, stmt, "toptweets", "top", Value.get(10));
-
         while (rs.next()) {
             List<Map<String, Object>> result = (List<Map<String, Object>>) rs.getObject();
             for (Map<String, Object> element : result) {

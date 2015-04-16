@@ -10,21 +10,16 @@ import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.Statement;
 import com.stormspike.topology.Constants;
 
-/**
- * Created by tvsamartha on 4/13/15.
- */
 public class TimeSlidingWindow {
 
     public static final String AEROSPIKE_NS = "test";
     public static final String AEROSPIKE_STORMSET = "stormset";
-
     private static final String TWEET_ID_BIN = "tweetId_bin";
     private static final String TWEET_DATETIME_BIN = "tweetDateTime";
     private static final String TWEET_LOCATION_BIN = "tweetLocation";
     private static final String TWEET_TEXT_BIN = "tweetText";
     private static final String USER_NAME_BIN = "userName";
     private static final String TWEET_HASHTAG_BIN = "hashTag";
-    private static final String RETWEET_BIN = "retweet";
 
     private static AerospikeClient aerospikeClient;
     private static WritePolicy aerospikeWritePolicy;
@@ -63,9 +58,7 @@ public class TimeSlidingWindow {
             System.out.println("TOTAL RECORDS = " + recordCounter);
             System.out.println("--------------------------------------------------------");
         }
-
     }
-
 
     public static void getTweetsInTimeframe(long startTime, long endTime){
         System.out.println("\nGet Tweets in timeframe " + startTime + " to " + endTime);
@@ -143,9 +136,7 @@ public class TimeSlidingWindow {
 
      public static void main(String[] args){
          String userName = "Sofie";
-
          getTweetsOfUser(userName);
-
          int mins = 22;
          long startTime = System.currentTimeMillis() - (mins * 60 * 1000);
          getTweetsInTimeframe(startTime);
