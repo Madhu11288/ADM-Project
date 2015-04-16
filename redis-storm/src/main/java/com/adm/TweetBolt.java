@@ -59,7 +59,7 @@ public class TweetBolt implements IRichBolt{
             hMap.put("hash-tags", hashTag);
         }
 
-        jedis.hmset("TWEET:" + tweetId.toString(), hMap);
+        jedis.hmset("TWEET:" + tweetId, hMap);
         counter++;
     }
 

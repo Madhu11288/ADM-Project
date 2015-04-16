@@ -33,8 +33,10 @@ public class TimeSeriesBolt implements IRichBolt {
     public void execute(Tuple tuple) {
         Status tweet = (Status) tuple.getValue(0);
 
+        Long tweetId = tweet.getId();
         Long time_mills = tweet.getCreatedAt().getTime();
-        jedis.zadd("TWEET_TIME_SERIES", time_mills, tweet.getText());
+
+        jedis.zadd("tweet-time-series", time_mills, "TWEET:" + tweetId);
         counter++;
     }
 

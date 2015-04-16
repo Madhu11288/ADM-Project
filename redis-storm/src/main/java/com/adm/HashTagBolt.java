@@ -36,7 +36,9 @@ public class HashTagBolt implements IRichBolt{
         HashtagEntity[] hashtagEntities = tweet.getHashtagEntities();
         if (hashtagEntities.length != 0) {
             for (HashtagEntity hashtagEntity : hashtagEntities) {
-                jedis.incr("HASHTAG:" + hashtagEntity.getText());
+                String key = "HASHTAG:" + hashtagEntity.getText();
+                jedis.incr(key);
+                jedis.zadd("trending-topics", Double.parseDouble(jedis.get(key)), key);
             }
             counter++;
         }
