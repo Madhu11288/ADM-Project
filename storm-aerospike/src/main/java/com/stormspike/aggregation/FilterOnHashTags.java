@@ -14,12 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class FilterOnHashTags {
-
-    private static final int MAX_RECORDS = 10;
-    private String namespace;
-    private String set;
-    private List<String> hashTags;
-
     public static final String AEROSPIKE_NS = "test";
     public static final String AEROSPIKE_SET = "stormset-hashtag";
     private static final String TWEET_HASHTAG_BIN = "hashTag";
@@ -29,14 +23,8 @@ public class FilterOnHashTags {
     private static AerospikeClient aerospikeClient;
     private static WritePolicy aerospikeWritePolicy;
 
-    public FilterOnHashTags() {
-        this.namespace = AEROSPIKE_NS;
-        this.set = AEROSPIKE_SET;
-    }
-
-
     private static void aggregate(Statement stmt) {
-        ResultSet rs = aerospikeClient.queryAggregate(null, stmt, "toptweets", "top", Value.get(20));
+        ResultSet rs = aerospikeClient.queryAggregate(null, stmt, "toptweets", "top", Value.get(10));
 
         while (rs.next()) {
             List<Map<String, Object>> result = (List<Map<String, Object>>) rs.getObject();
