@@ -13,7 +13,8 @@ import backtype.storm.utils.Utils;
 public class TweetsTopology {
 
     public static final String AEROSPIKE_NS = "test";
-    public static final String AEROSPIKE_SET = "stormset-hashtag";
+    public static final String AEROSPIKE_HASHTAGSET = "stormset-hashtag";
+    public static final String AEROSPIKE_STORMSET = "stormset";
 
     public static void main(String[] args) {
         String consumerKey = args[0];
@@ -26,8 +27,10 @@ public class TweetsTopology {
         TopologyBuilder builder = new TopologyBuilder();
         
         builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
-                                accessToken, accessTokenSecret, keyWords));
-        builder.setBolt("print", new HashTagBolt(AEROSPIKE_NS, AEROSPIKE_SET))
+                accessToken, accessTokenSecret, keyWords));
+        builder.setBolt("HashTagBolt", new HashTagBolt(AEROSPIKE_NS, AEROSPIKE_HASHTAGSET))
+                .shuffleGrouping("twitter");
+        builder.setBolt("AerospikeBolt", new AerospikeBolt(AEROSPIKE_NS, AEROSPIKE_STORMSET))
                 .shuffleGrouping("twitter");
 
                 
