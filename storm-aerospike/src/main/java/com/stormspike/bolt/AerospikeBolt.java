@@ -34,6 +34,7 @@ public class AerospikeBolt extends BaseRichBolt {
     private static final String TWEET_TEXT_BIN = "tweetText";
     private static final String USER_NAME_BIN = "userName";
     private static final String TWEET_HASHTAG_BIN = "hashTag";
+    private static final String RETWEET_BIN = "retweet";
     private static final String TWEET_ID = "tweetid";
     private static final String USER_NAME = "username";
     private String namespace;
@@ -78,10 +79,15 @@ public class AerospikeBolt extends BaseRichBolt {
 
         Key key = new Key(this.namespace, this.set, status.getId());
 
-        Bin bin1 = new Bin(USER_NAME_BIN, status.getUser().getName());
-        Bin bin2 = new Bin(TWEET_TEXT_BIN, status.getText());
-        Bin bin3 = new Bin(TWEET_LOCATION_BIN, status.getGeoLocation());
-        Bin bin4 = new Bin(TWEET_DATE_BIN, status.getCreatedAt().toString());
+        Bin bin1 = new Bin(USER_NAME_BIN, Value.get(status.getUser().getName()));
+        Bin bin2 = new Bin(TWEET_TEXT_BIN, Value.get(status.getText()));
+        Bin bin3 ;
+        if(status.getGeoLocation()!=null) {
+            bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(status.getGeoLocation().toString()));
+        } else {
+            bin3 = new Bin(TWEET_LOCATION_BIN, "");
+        }
+        Bin bin4 = new Bin(TWEET_DATE_BIN, Value.get(status.getCreatedAt().toString()));
         HashtagEntity[] htEntity = status.getHashtagEntities();
 
         //create a set to hold the hashtags so that duplicate hashtags inthe same tweet is eliminated
@@ -94,8 +100,9 @@ public class AerospikeBolt extends BaseRichBolt {
             }
         }
         Bin bin5 = new Bin(TWEET_HASHTAG_BIN, Value.get(hashTags));
+        Bin bin6 = new Bin(RETWEET_BIN,Value.get(status.getRetweetCount()));
 
-        this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin1, bin2, bin3, bin4, bin5);
+        this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin1, bin2, bin3, bin4, bin5, bin6);
 
     }
 
