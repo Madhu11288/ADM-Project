@@ -54,15 +54,11 @@ public class HashTagBolt extends BaseRichBolt {
     public void execute(Tuple input) {
         // First we need to get our key value
         Status status = (Status) input.getValueByField("tweet");
-        System.out.println("---------------------------------");
-        System.out.println(status.getId());
-        System.out.println(status.getUser().getName());
 
         HashtagEntity[] htEntity = status.getHashtagEntities();
         //create a set to hold the hashtags so that duplicate hashtags inthe same tweet is eliminated
         if (htEntity.length > 0) {
             for (HashtagEntity ht : htEntity) {
-                System.out.println("ht.getText() = " + ht.getText());
                 Key key = new Key(this.namespace, this.set, Value.get(ht.getText()));
                 Record record = this.aerospikeClient.get(this.aerospikeWritePolicy, key);
                 Bin bin0 = new Bin(TWEET_HASHTAG_BIN, Value.get(ht.getText()));

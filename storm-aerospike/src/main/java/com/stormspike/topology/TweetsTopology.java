@@ -1,14 +1,12 @@
 package com.stormspike.topology;
 
-import java.util.Arrays;
-
-import com.stormspike.bolt.AerospikeBolt;
-import com.stormspike.bolt.HashTagBolt;
-import com.stormspike.spout.TwitterSpout;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
+import com.stormspike.bolt.AerospikeBolt;
+import com.stormspike.bolt.HashTagBolt;
+import com.stormspike.spout.TwitterSpout;
 
 public class TweetsTopology {
 
@@ -22,12 +20,10 @@ public class TweetsTopology {
         String accessToken = args[2];
         String accessTokenSecret = args[3];
 
-        String[] keyWords = {"Chicago"};
-        
         TopologyBuilder builder = new TopologyBuilder();
         
         builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
-                accessToken, accessTokenSecret, keyWords));
+                accessToken, accessTokenSecret));
         builder.setBolt("HashTagBolt", new HashTagBolt(AEROSPIKE_NS, AEROSPIKE_HASHTAGSET))
                 .shuffleGrouping("twitter");
         builder.setBolt("AerospikeBolt", new AerospikeBolt(AEROSPIKE_NS, AEROSPIKE_STORMSET))
@@ -35,8 +31,6 @@ public class TweetsTopology {
 
                 
         Config conf = new Config();
-        
-        
         LocalCluster cluster = new LocalCluster();
         
         cluster.submitTopology("test", conf, builder.createTopology());
