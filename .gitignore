@@ -16,3 +16,4 @@ twitter-aerospike/.settings/*
 storm-aerospike/.idea/*
 storm-aerospike/*.iml
 storm-aerospike/target/*
+.idea/libraries/*

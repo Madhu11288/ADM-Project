@@ -18,6 +18,7 @@ import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class AerospikeBolt extends BaseRichBolt {
     private WritePolicy aerospikeWritePolicy;
 
     private static final String TWEET_ID_BIN = "tweetId_bin";
-    private static final String TWEET_DATE_BIN = "tweetDate";
+    private static final String TWEET_DATETIME_BIN = "tweetDateTime";
     private static final String TWEET_LOCATION_BIN = "tweetLocation";
     private static final String TWEET_TEXT_BIN = "tweetText";
     private static final String USER_NAME_BIN = "userName";
@@ -56,11 +57,14 @@ public class AerospikeBolt extends BaseRichBolt {
             this.aerospikeWritePolicy.recordExistsAction = RecordExistsAction.UPDATE;
 
 
-            IndexTask indexTask1 = this.aerospikeClient.createIndex(aerospikeWritePolicy, this.namespace, this.set, TWEET_ID, TWEET_ID_BIN, IndexType.NUMERIC);
+            IndexTask indexTask1 = this.aerospikeClient.createIndex(aerospikeWritePolicy, this.namespace, this.set, USER_NAME, USER_NAME_BIN, IndexType.STRING);
             indexTask1.waitTillComplete();
 
-            IndexTask indexTask2 = this.aerospikeClient.createIndex(aerospikeWritePolicy, this.namespace, this.set, USER_NAME, USER_NAME_BIN, IndexType.STRING);
+            IndexTask indexTask2 = this.aerospikeClient.createIndex(aerospikeWritePolicy, this.namespace, this.set, TWEET_HASHTAG_BIN, TWEET_HASHTAG_BIN, IndexType.STRING);
             indexTask2.waitTillComplete();
+
+            IndexTask indexTask3 = this.aerospikeClient.createIndex(aerospikeWritePolicy, this.namespace, this.set, TWEET_DATETIME_BIN, TWEET_DATETIME_BIN, IndexType.NUMERIC);
+            indexTask3.waitTillComplete();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -79,17 +83,24 @@ public class AerospikeBolt extends BaseRichBolt {
 
         Key key = new Key(this.namespace, this.set, status.getId());
 
+        String geoLoc = new String("");
+        if(status.getGeoLocation() != null){
+            geoLoc = status.getGeoLocation().toString();
+        }
+
+        Bin bin0 = new Bin(TWEET_ID_BIN, Value.get(status.getId()));
         Bin bin1 = new Bin(USER_NAME_BIN, Value.get(status.getUser().getName()));
         Bin bin2 = new Bin(TWEET_TEXT_BIN, Value.get(status.getText()));
-        Bin bin3 ;
-        if(status.getGeoLocation()!=null) {
-            bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(status.getGeoLocation().toString()));
-        } else {
-            bin3 = new Bin(TWEET_LOCATION_BIN, "");
-        }
-        Bin bin4 = new Bin(TWEET_DATE_BIN, Value.get(status.getCreatedAt().toString()));
-        HashtagEntity[] htEntity = status.getHashtagEntities();
+        Bin bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(geoLoc));
+        //Bin bin4 = new Bin(TWEET_DATETIME_BIN, Value.get(status.getCreatedAt().toString()));
 
+        Date date = status.getCreatedAt();
+        long epochTime = date.getTime();
+        System.out.println("epoch time = " + epochTime);
+        Bin bin4 = new Bin(TWEET_DATETIME_BIN, Value.get(epochTime));
+
+
+        HashtagEntity[] htEntity = status.getHashtagEntities();
         //create a set to hold the hashtags so that duplicate hashtags inthe same tweet is eliminated
         List<String> hashTags = new ArrayList<String>();
 
@@ -102,7 +113,7 @@ public class AerospikeBolt extends BaseRichBolt {
         Bin bin5 = new Bin(TWEET_HASHTAG_BIN, Value.get(hashTags));
         Bin bin6 = new Bin(RETWEET_BIN,Value.get(status.getRetweetCount()));
 
-        this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin1, bin2, bin3, bin4, bin5, bin6);
+        this.aerospikeClient.put(this.aerospikeWritePolicy, key, bin0, bin1, bin2, bin3, bin4, bin5, bin6);
 
     }
 
