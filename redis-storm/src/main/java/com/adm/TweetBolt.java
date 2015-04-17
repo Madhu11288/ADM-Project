@@ -53,13 +53,18 @@ public class TweetBolt implements IRichBolt{
         HashtagEntity[] hashTagEntities = tweet.getHashtagEntities();
         if (hashTagEntities.length > 0) {
             for (HashtagEntity hashtagEntity : hashTagEntities) {
-                hashTagsBuilder.append(hashtagEntity.getText()).append(":");
+                hashTagsBuilder.append(hashtagEntity.getText().toLowerCase()).append(":");
+                String key = "hashtag:" + hashtagEntity.getText().toLowerCase();
+                jedis.incr(key);
+                jedis.zadd("trending-topics", Double.parseDouble(jedis.get(key)), key);
             }
             String hashTag = hashTagsBuilder.substring(0, hashTagsBuilder.length() - 2);
             hMap.put("hash-tags", hashTag);
         }
 
-        jedis.hmset("TWEET:" + tweetId, hMap);
+        jedis.hmset("tweet:" + tweetId, hMap);
+        jedis.set("tweet-id:" + tweetId, tweet.getText());
+        jedis.zadd("tweet-time-series", time_mills, "tweet-id:" + tweetId);
         counter++;
     }
 

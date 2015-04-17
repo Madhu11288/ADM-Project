@@ -25,7 +25,7 @@ public class HashTagBolt implements IRichBolt{
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
         Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
+        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
         jedis = new JedisCluster(jedisClusterNodes);
         this.counter = 0;
     }
@@ -36,7 +36,7 @@ public class HashTagBolt implements IRichBolt{
         HashtagEntity[] hashtagEntities = tweet.getHashtagEntities();
         if (hashtagEntities.length != 0) {
             for (HashtagEntity hashtagEntity : hashtagEntities) {
-                String key = "HASHTAG:" + hashtagEntity.getText();
+                String key = "HASHTAG:" + hashtagEntity.getText().toLowerCase();
                 jedis.incr(key);
                 jedis.zadd("trending-topics", Double.parseDouble(jedis.get(key)), key);
             }
