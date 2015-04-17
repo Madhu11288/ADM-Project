@@ -1,6 +1,14 @@
 redis-storm/.idea/*
 redis-storm/*.iml
 redis-storm/target/*
+redis-storm-visualization/.idea/.name
+redis-storm-visualization/.idea/encodings.xml
+redis-storm-visualization/.idea/misc.xml
+redis-storm-visualization/.idea/modules.xml
+redis-storm-visualization/.idea/redis-storm-visualization.iml
+redis-storm-visualization/.idea/scopes/scope_settings.xml
+redis-storm-visualization/.idea/vcs.xml
+redis-storm-visualization/.idea/workspace.xml
 twitter-aerospike/.classpath
 twitter-aerospike/target/*
 twitter-aerospike/.project
