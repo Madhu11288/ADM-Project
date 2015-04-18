@@ -122,7 +122,7 @@ public class StreamSpout implements IRichSpout {
             Utils.sleep(1000);
             return;
         }
-        System.out.println("Spout: " + counter++);
+        System.out.println("Spout: " + status.getId());
         this.spoutOutputCollector.emit(new Values(status));
     }
 

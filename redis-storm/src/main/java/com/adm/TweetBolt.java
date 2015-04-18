@@ -11,10 +11,7 @@ import redis.clients.jedis.JedisPool;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TweetBolt implements IRichBolt{
     OutputCollector outputCollector;
@@ -62,9 +59,13 @@ public class TweetBolt implements IRichBolt{
             hMap.put("hash-tags", hashTag);
         }
 
-        jedis.hmset("tweet:" + tweetId, hMap);
+//        jedis.hmset("tweet:" + tweetId, hMap);
         jedis.set("tweet-id:" + tweetId, tweet.getText());
+        jedis.expire("tweet-id:" + tweetId, 2 * 60);
         jedis.zadd("tweet-time-series", time_mills, "tweet-id:" + tweetId);
+        Long currentTime = new Date().getTime();
+        Long twoMinutes = (long) (2 * 60 * 1000);
+        jedis.zremrangeByScore("tweet-time-series", Long.MIN_VALUE, currentTime - twoMinutes);
         counter++;
     }
 
