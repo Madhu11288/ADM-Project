@@ -1,0 +1,53 @@
+html, body {
+    height: 530px;
+    width: 100%;
+}
+
+.titles {
+    font-size: 30px;
+}
+
+.tweets {
+    background-color: #acc7dc;
+    height: 500px;
+}
+
+.hash-tags {
+    background-color: #d6dde3;
+    height: 500px;
+}
+
+.scroll-svg {
+
+}
+
+.longscroll .row {
+    font-family: Arial;
+    font-size: 11px;
+    height: 19px;
+    padding: 0 8px;
+    border-bottom: solid #eee 1px;
+}
+
+.information {
+    position: absolute;
+    top: 15px;
+    left: 300px;
+    width: 350px;
+    height: 400px;
+}
+
+.info-svg {
+    fill: #2968AA;
+    overflow: visible;
+}
+
+.brace {
+    stroke: #2968AA;
+    stroke-width: 2px;
+    fill: none;
+}
+
+.infotext {
+    font-size: 20px;
+}
