@@ -75,12 +75,7 @@ public class AerospikeBolt extends BaseRichBolt {
     public void execute(Tuple input) {
 
         // First we need to get our key value
-
         Status status = (Status) input.getValueByField("tweet");
-        System.out.println("---------------------------------");
-        System.out.println(status.getId());
-        System.out.println(status.getUser().getName());
-
         Key key = new Key(this.namespace, this.set, status.getId());
 
         String geoLoc = new String("");
@@ -96,7 +91,6 @@ public class AerospikeBolt extends BaseRichBolt {
 
         Date date = status.getCreatedAt();
         long epochTime = date.getTime();
-        System.out.println("epoch time = " + epochTime);
         Bin bin4 = new Bin(TWEET_DATETIME_BIN, Value.get(epochTime));
 
 
@@ -106,7 +100,6 @@ public class AerospikeBolt extends BaseRichBolt {
 
         if (htEntity.length > 0) {
             for (HashtagEntity ht : htEntity) {
-                System.out.println("ht.getText() = " + ht.getText());
                 hashTags.add(ht.getText());
             }
         }
