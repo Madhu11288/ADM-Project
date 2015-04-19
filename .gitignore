@@ -19,3 +19,5 @@ storm-aerospike/target/*
 .idea/libraries/*
 aerospike-aggregation/.idea/*
 aerospike-aggregation/*.iml
+linearroad-storm-redis/linearroad-storm-redis.iml
+linearroad-storm-redis/.idea/*
