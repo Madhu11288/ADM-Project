@@ -59,13 +59,13 @@ public class TweetBolt implements IRichBolt{
             hMap.put("hash-tags", hashTag);
         }
 
-//        jedis.hmset("tweet:" + tweetId, hMap);
+        jedis.hmset("tweet:" + tweetId, hMap);
         jedis.set("tweet-id:" + tweetId, tweet.getText());
-        jedis.expire("tweet-id:" + tweetId, 2 * 60);
+        jedis.expire("tweet-id:" + tweetId, 7 * 60);
         jedis.zadd("tweet-time-series", time_mills, "tweet-id:" + tweetId);
         Long currentTime = new Date().getTime();
-        Long twoMinutes = (long) (2 * 60 * 1000);
-        jedis.zremrangeByScore("tweet-time-series", Long.MIN_VALUE, currentTime - twoMinutes);
+        Long tenMinutes = (long) (10 * 60 * 1000);
+        jedis.zremrangeByScore("tweet-time-series", Long.MIN_VALUE, currentTime - tenMinutes);
         counter++;
     }
 
