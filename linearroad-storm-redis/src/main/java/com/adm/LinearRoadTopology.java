@@ -7,13 +7,13 @@ import backtype.storm.topology.TopologyBuilder;
 public class LinearRoadTopology {
     public static void main(String[] args) {
         LinearRoadTopology linearRoadTopology = new LinearRoadTopology();
-        linearRoadTopology.setUpAndRunTopology(args);
+        linearRoadTopology.setUpAndRunTopology();
     }
 
-    private void setUpAndRunTopology(String[] args) {
+    private void setUpAndRunTopology() {
         TopologyBuilder topologyBuilder = new TopologyBuilder();
-        topologyBuilder.setSpout("CarDataPoints", new LinearRoadSpout(), 1);
-        topologyBuilder.setBolt("Calculator", new CalculatorBolt(), 1).shuffleGrouping("CarDataPoints");
+        topologyBuilder.setSpout("LinearRoadSpout", new LinearRoadSpout(), 1);
+        topologyBuilder.setBolt("CalculatorBolt", new CalculatorBolt(), 1).shuffleGrouping("LinearRoadSpout");
 
 
         Config conf = new Config();

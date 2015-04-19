@@ -9,14 +9,16 @@ import backtype.storm.tuple.Tuple;
 import java.util.Map;
 
 public class CalculatorBolt implements IRichBolt{
+
+    OutputCollector outputCollector;
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-
+        this.outputCollector = collector;
     }
 
     @Override
     public void execute(Tuple input) {
-
+        System.out.println(input.getValue(0));
     }
 
     @Override
