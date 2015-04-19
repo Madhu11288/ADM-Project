@@ -36,7 +36,8 @@ hashtags.onmessage = function (event) {
             .data(words)
             .enter().append("text")
             .style("font-size", function (d) {
-                return (d.size * 2) + "px";
+                var pixel = (600 * d.size) / 500;
+                return  pixel + "px";
             })
             .style("font-family", "Impact")
             .style("fill", function (d, i) {
@@ -65,6 +66,7 @@ tweets.onmessage = function (event) {
         tweet["name"] = tweetText;
         list.push(tweet);
     }
+
     console.log(list.length);
     $("#tweets-svg").empty();
     var scrollSVG = d3.select("#tweets-svg")

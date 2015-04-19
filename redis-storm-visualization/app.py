@@ -20,18 +20,15 @@ def trending_hash_tags():
 
 
 def tweets_sliding_window():
+    two_mins_mills = 5 * 60 * 1000
     current_time_milliseconds = time.time() * 1000
-    five_mins_past = 30 * 1000
-    print(five_mins_past)
-    time_five_mins_ago_milliseconds = (current_time_milliseconds - five_mins_past)
-    print(round(time_five_mins_ago_milliseconds))
-    print(round(current_time_milliseconds))
-    tweet_ids = redis.zrangebyscore("tweet-time-series",
-                                 round(time_five_mins_ago_milliseconds - five_mins_past),
-                                 round(time_five_mins_ago_milliseconds))
-    print(tweet_ids)
+    time1 = current_time_milliseconds - two_mins_mills - 30
+    time2 = current_time_milliseconds - two_mins_mills
+
+    tweet_ids = redis.zrangebyscore("tweet-time-series", round(current_time_milliseconds - two_mins_mills), round(current_time_milliseconds))
+
     tweets_data = redis.mget(tweet_ids)
-    print(tweets_data)
+    print(len(tweets_data))
     tweets = ""
     for tweet in tweets_data:
         tweets = tweets + str(tweet) + "|%*%|"
