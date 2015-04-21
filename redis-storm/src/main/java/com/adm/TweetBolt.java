@@ -15,7 +15,6 @@ import java.util.*;
 
 public class TweetBolt implements IRichBolt{
     OutputCollector outputCollector;
-    JedisPool pool;
     JedisCluster jedis;
     Integer counter;
 
@@ -72,7 +71,6 @@ public class TweetBolt implements IRichBolt{
     @Override
     public void cleanup() {
         System.out.println("User Bolt Processed: " + this.counter + " number of tweets");
-        pool.destroy();
     }
 
     @Override
