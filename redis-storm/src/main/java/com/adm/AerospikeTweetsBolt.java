@@ -1,4 +1,4 @@
-package com.stormspike.bolt;
+package com.adm;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -13,7 +13,6 @@ import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.aerospike.client.query.IndexType;
 import com.aerospike.client.task.IndexTask;
-import com.stormspike.topology.Constants;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
@@ -22,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class AerospikeBolt extends BaseRichBolt {
+public class AerospikeTweetsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
 
@@ -41,7 +40,7 @@ public class AerospikeBolt extends BaseRichBolt {
     private String namespace;
     private String set;
 
-    public AerospikeBolt(String namespace, String set) {
+    public AerospikeTweetsBolt(String namespace, String set) {
         this.namespace = namespace;
         this.set = set;
     }
@@ -51,7 +50,7 @@ public class AerospikeBolt extends BaseRichBolt {
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.collector = collector;
         try {
-            this.aerospikeClient = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
+            this.aerospikeClient = new AerospikeClient(AerospikeConstants.AEROSPIKE_HOST, AerospikeConstants.AEROSPIKE_PORT);
             this.aerospikeWritePolicy = new WritePolicy();
             this.aerospikeWritePolicy.maxRetries = 10;
             this.aerospikeWritePolicy.recordExistsAction = RecordExistsAction.UPDATE;

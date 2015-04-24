@@ -17,7 +17,7 @@ import twitter4j.Status;
 
 import java.util.Map;
 
-public class HashTagBolt extends BaseRichBolt {
+public class AerospikeHashTagBolt extends BaseRichBolt {
 
     private static final String TWEET_HASHTAG_BIN = "hashTag";
     private static final String HASHTAG = "hashtag";
@@ -28,7 +28,7 @@ public class HashTagBolt extends BaseRichBolt {
     private AerospikeClient aerospikeClient;
     private WritePolicy aerospikeWritePolicy;
 
-    public HashTagBolt(String namespace, String set) {
+    public AerospikeHashTagBolt(String namespace, String set) {
         this.namespace = namespace;
         this.set = set;
     }

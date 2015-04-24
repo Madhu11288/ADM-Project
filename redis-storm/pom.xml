@@ -30,6 +30,11 @@
             <artifactId>twitter4j-stream</artifactId>
             <version>3.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.aerospike</groupId>
+            <artifactId>aerospike-client</artifactId>
+            <version>[3.0,)</version>
+        </dependency>
     </dependencies>
 
     <build> <sourceDirectory>src/main/java</sourceDirectory>
@@ -76,6 +81,7 @@
                     <mainClass>${storm.topology}</mainClass>
                 </configuration>
             </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
