@@ -16,10 +16,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class LinearRoadSpout implements IRichSpout {
+public class LinearRoadABSpout implements IRichSpout {
 
     SpoutOutputCollector _collector;
-    JedisCluster jedis;
     BufferedReader br;
     Process process;
 
@@ -36,15 +35,8 @@ public class LinearRoadSpout implements IRichSpout {
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         _collector = collector;
-
-        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
-        jedis = new JedisCluster(jedisClusterNodes);
-
         String command = "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-src/datafeeder " +
-                "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-test-data/datafile20seconds.dat";
+                "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-test-data/datafile3hours.dat";
         try {
             process = Runtime.getRuntime().exec(command);
             br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -77,7 +69,8 @@ public class LinearRoadSpout implements IRichSpout {
         String line;
         try {
             while ((line = br.readLine()) != null) {
-                this._collector.emit(new Values(line));
+                if (line.startsWith("2"))
+                    this._collector.emit(new Values(line));
             }
         } catch (IOException e) {
             e.printStackTrace();

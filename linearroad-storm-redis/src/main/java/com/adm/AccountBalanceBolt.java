@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CaptureQueryZeroBolt implements IRichBolt{
+public class AccountBalanceBolt implements IRichBolt{
 
     OutputCollector outputCollector;
     JedisCluster jedis;
@@ -30,29 +30,11 @@ public class CaptureQueryZeroBolt implements IRichBolt{
 
     @Override
     public void execute(Tuple input) {
-        String record = (String) input.getValue(1);
+        String record = (String) input.getValue(0);
         String[] values = record.split(",");
-        String minute = values[1];
         String vehicleID = values[2];
-        String speed = values[3];
-        String xWay = values[4];
-        String lane = values[5];
-        String direction = values[6];
-        String segment = values[7];
-
-        String key = "avg-speed:minute:" + minute + "vehicle-id" + vehicleID;
-        if (jedis.exists(key)) {
-            jedis.set(key, speed);
-            jedis.expire(key, 600);
-        } else {
-            Float avgSpeed = (Float.parseFloat(jedis.get(key)) + Float.parseFloat(speed))/2;
-            jedis.set(key, avgSpeed.toString());
-        }
-
-        String keyForSegment = "report:minute:" + minute + ":xWay:" + xWay + ":lane:"
-                + lane + ":direction:" + direction + ":segment:" + segment;
-        jedis.lpush(keyForSegment, key);
-        jedis.expire(keyForSegment, 600);
+        String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
+        System.out.println(vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
     }
 
     @Override
