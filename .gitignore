@@ -22,4 +22,5 @@ aerospike-aggregation/*.iml
 linearroad-storm-redis/linearroad-storm-redis.iml
 linearroad-storm-redis/.idea/*
 linearroad-storm-redis/target/*
+sample-utilities/.idea/misc.xml
 sample-utilities/.idea/workspace.xml

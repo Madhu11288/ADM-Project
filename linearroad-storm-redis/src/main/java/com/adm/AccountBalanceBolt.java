@@ -34,7 +34,11 @@ public class AccountBalanceBolt implements IRichBolt{
         String[] values = record.split(",");
         String vehicleID = values[2];
         String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
-        System.out.println(vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+        if (jedis.exists(vehicleAccountBalanceKey)) {
+            System.out.println(vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+        } else {
+            System.out.println(vehicleID + ": " + 0);
+        }
     }
 
     @Override

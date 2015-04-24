@@ -56,7 +56,7 @@ public class PositionReportBolt implements IRichBolt{
 
         if (!jedis.exists(vehicleAvgSpeedKey)) {
             jedis.set(vehicleAvgSpeedKey, speed);
-            jedis.expire(vehicleAvgSpeedKey, 600);
+            jedis.expire(vehicleAvgSpeedKey, 360);
         } else {
             Float avgSpeed = (Float.parseFloat(jedis.get(vehicleAvgSpeedKey)) + Float.parseFloat(speed))/2;
             jedis.set(vehicleAvgSpeedKey, avgSpeed.toString());
@@ -66,7 +66,7 @@ public class PositionReportBolt implements IRichBolt{
             jedis.hmset(vehiclePositionReportKey, positionReport);
             jedis.incrBy(vehicleAccountBalanceKey, 0);
             jedis.lpush(vehiclesCurrentSegmentKey, vehicleAvgSpeedKey);
-            jedis.expire(vehiclesCurrentSegmentKey, 600);
+            jedis.expire(vehiclesCurrentSegmentKey, 360);
 
         } else {
             List<String> storedValues = jedis.hmget(vehiclePositionReportKey,
