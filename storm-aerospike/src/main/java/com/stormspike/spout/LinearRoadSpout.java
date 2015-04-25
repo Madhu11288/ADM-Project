@@ -43,8 +43,11 @@ public class LinearRoadSpout implements IRichSpout {
         this.aerospikeWritePolicy.maxRetries = 10;
         this.aerospikeWritePolicy.recordExistsAction = RecordExistsAction.UPDATE;
 
-        String command = "/Users/madhushrees/ADM_/datadriver/datafeeder " +
-                "/Users/madhushrees/ADM_/datadriver/datafile3hours.dat";
+        //String command = "/Users/madhushrees/ADM_/datadriver/datafeeder " +
+        //        "/Users/madhushrees/ADM_/datadriver/datafile3hours.dat";
+
+        String command = "/home/tvsamartha/github/ADM-Project/storm-aerospike/datadriverTestData/ " +
+                "/home/tvsamartha/github/ADM-Project/storm-aerospike/datadriverTestData/datafile3hours.dat" ;
         try {
             process = Runtime.getRuntime().exec(command);
             br = new BufferedReader(new InputStreamReader(process.getInputStream()));
