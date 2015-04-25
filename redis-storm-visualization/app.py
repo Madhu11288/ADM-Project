@@ -1,5 +1,6 @@
 from flask import Flask, Response, render_template
-#from rediscluster import RedisCluster
+# from rediscluster import RedisCluster
+import redis as r
 import aerospike
 import time
 import os
@@ -13,17 +14,17 @@ AEROSPIKE_NAMESPACE = "test"
 AEROSPIKE_SET = "stormset-hashtag"
 TWEET_HASHTAG_BIN = "hashTag"
 TWEET_COUNT = "hashTagCount"
-AEROSPIKE_STORMSET = "stormset";
-TWEET_ID_BIN = "tweetId_bin";
-TWEET_DATETIME_BIN = "tweetDateTime";
-TWEET_LOCATION_BIN = "tweetLocation";
-TWEET_TEXT_BIN = "tweetText";
-USER_NAME_BIN = "userName";
+AEROSPIKE_STORMSET = "stormset"
+TWEET_ID_BIN = "tweetId_bin"
+TWEET_DATETIME_BIN = "tweetDateTime"
+TWEET_LOCATION_BIN = "tweetLocation"
+TWEET_TEXT_BIN = "tweetText"
+USER_NAME_BIN = "userName"
 
 # Aerospike
 config = {
     'hosts': [
-        ('127.0.0.1', 3000)
+        ('10.0.0.29', 3000)
     ],
     'policies': {
         'timeout': 1000
@@ -35,8 +36,7 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-startup_nodes = [{"host": "10.0.0.30", "port": "7000"}]
-redis = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
+redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
 
 
 def trending_hash_tags():
@@ -49,7 +49,7 @@ def trending_hash_tags():
         trending_hashtags += result
     yield 'data: %s\n\n' % trending_hashtags[0:(len(trending_hashtags)-5)]
 
-def print_sliding_window_result((key, metadata, record)):
+def print_sliding_window_result(key, metadata, record):
     print(str(record['userName']) + " - " + str(record['tweetText']) + " -- " + str(record['tweetDateTime']))
 
 def trending_hash_tags_aerospike():
