@@ -5,8 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,34 +15,35 @@ import java.util.Set;
 public class AccountBalanceBolt implements IRichBolt{
 
     OutputCollector outputCollector;
-    JedisCluster jedis;
+//    JedisCluster jedis;
+    Jedis jedis;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.outputCollector = collector;
-        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
-        jedis = new JedisCluster(jedisClusterNodes);
+        this.jedis = new Jedis("localhost");
+//        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
+//        jedis = new JedisCluster(jedisClusterNodes);
     }
 
     @Override
     public void execute(Tuple input) {
-        String record = (String) input.getValue(0);
-        String[] values = record.split(",");
-        String vehicleID = values[2];
-        String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
-        if (jedis.exists(vehicleAccountBalanceKey)) {
-            System.out.println(vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
-        } else {
-            System.out.println(vehicleID + ": " + 0);
-        }
+            String record = (String) input.getValue(0);
+            String[] values = record.split(",");
+            String vehicleID = values[2];
+            String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
+            if (jedis.exists(vehicleAccountBalanceKey)) {
+                System.out.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+            } else {
+                System.out.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ":0");
+            }
     }
 
     @Override
     public void cleanup() {
-
     }
 
     @Override
