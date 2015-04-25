@@ -6,6 +6,7 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import twitter4j.HashtagEntity;
@@ -17,16 +18,17 @@ import java.util.Set;
 
 public class HashTagBolt implements IRichBolt{
     OutputCollector outputCollector;
-    JedisPool pool;
-    JedisCluster jedis;
+    //    JedisCluster jedis;
+    Jedis jedis;
     Integer counter;
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
-        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
-        jedis = new JedisCluster(jedisClusterNodes);
+//        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7000));
+//        jedis = new JedisCluster(jedisClusterNodes);
+        this.jedis = new Jedis("10.0.0.29");
         this.counter = 0;
     }
 
@@ -36,7 +38,7 @@ public class HashTagBolt implements IRichBolt{
         HashtagEntity[] hashtagEntities = tweet.getHashtagEntities();
         if (hashtagEntities.length != 0) {
             for (HashtagEntity hashtagEntity : hashtagEntities) {
-                String key = "HASHTAG:" + hashtagEntity.getText().toLowerCase();
+                String key = "hash-tag:" + hashtagEntity.getText().toLowerCase();
                 jedis.incr(key);
                 jedis.zadd("trending-topics", Double.parseDouble(jedis.get(key)), key);
             }
@@ -46,7 +48,6 @@ public class HashTagBolt implements IRichBolt{
 
     @Override
     public void cleanup() {
-        pool.destroy();
         System.out.println("Hash Bolt Processed: " + this.counter + " number of tweets");
     }
 

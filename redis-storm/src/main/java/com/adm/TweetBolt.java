@@ -6,6 +6,7 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import twitter4j.HashtagEntity;
@@ -15,15 +16,17 @@ import java.util.*;
 
 public class TweetBolt implements IRichBolt{
     OutputCollector outputCollector;
-    JedisCluster jedis;
+//    JedisCluster jedis;
+    Jedis jedis;
     Integer counter;
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
-        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
-        jedis = new JedisCluster(jedisClusterNodes);
+//        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
+//        jedis = new JedisCluster(jedisClusterNodes);
+        this.jedis = new Jedis("10.0.0.29");
         this.counter = 0;
     }
 
@@ -50,7 +53,7 @@ public class TweetBolt implements IRichBolt{
         if (hashTagEntities.length > 0) {
             for (HashtagEntity hashtagEntity : hashTagEntities) {
                 hashTagsBuilder.append(hashtagEntity.getText().toLowerCase()).append(":");
-                String key = "hashtag:" + hashtagEntity.getText().toLowerCase();
+                String key = "hash-tag:" + hashtagEntity.getText().toLowerCase();
                 jedis.incr(key);
                 jedis.zadd("trending-topics", Double.parseDouble(jedis.get(key)), key);
             }
@@ -64,7 +67,7 @@ public class TweetBolt implements IRichBolt{
         jedis.zadd("tweet-time-series", time_mills, "tweet-id:" + tweetId);
         Long currentTime = new Date().getTime();
         Long tenMinutes = (long) (10 * 60 * 1000);
-        jedis.zremrangeByScore("tweet-time-series", Long.MIN_VALUE, currentTime - tenMinutes);
+        jedis.zremrangeByScore("tweet-time-series", 0, currentTime - tenMinutes);
         counter++;
     }
 

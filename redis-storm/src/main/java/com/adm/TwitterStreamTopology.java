@@ -20,13 +20,13 @@ public class TwitterStreamTopology {
         TopologyBuilder topologyBuilder = new TopologyBuilder();
         topologyBuilder.setSpout("Streams", new StreamSpout(consumerKey, consumerSecret,
                 accessTokenKey, accessTokenSecret), 1);
-//        topologyBuilder.setBolt("Tweets", new TweetBolt(), 1).shuffleGrouping("Streams");
+        topologyBuilder.setBolt("Tweets", new TweetBolt(), 1).shuffleGrouping("Streams");
+//        topologyBuilder.setBolt("TweetTimeSeries", new TimeSeriesBolt(), 1).allGrouping("Streams");
 //        topologyBuilder.setBolt("Users", new UserBolt(), 1).allGrouping("Streams");
 //        topologyBuilder.setBolt("HashTags", new HashTagBolt(), 1).allGrouping("Streams");
-//        topologyBuilder.setBolt("TweetTimeSeries", new TimeSeriesBolt(), 1).allGrouping("Streams");
 //        topologyBuilder.setBolt("Retweets", new ReTweetBolt(), 1).allGrouping("Streams");
 
-        //Aerospike Spout and Bolt
+        //Aerospike Bolt
         topologyBuilder.setBolt("AerospikeHashTagBolt", new AerospikeHashTagBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_HASHTAGSET))
                 .shuffleGrouping("Streams");
         topologyBuilder.setBolt("AerospikeTweetsBolt", new AerospikeTweetsBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_STORMSET))

@@ -6,6 +6,7 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import twitter4j.Status;
@@ -16,16 +17,18 @@ import java.util.Set;
 
 public class TimeSeriesBolt implements IRichBolt {
     OutputCollector outputCollector;
-    JedisPool pool;
-    JedisCluster jedis;
+    //    JedisPool pool;
+//    JedisCluster jedis;
+    Jedis jedis;
     Integer counter;
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
-        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
-        jedis = new JedisCluster(jedisClusterNodes);
+//        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
+//        jedis = new JedisCluster(jedisClusterNodes);
+        this.jedis = new Jedis("10.0.0.29");
         this.counter = 0;
     }
 
@@ -42,8 +45,6 @@ public class TimeSeriesBolt implements IRichBolt {
 
     @Override
     public void cleanup() {
-        System.out.println("User Bolt Processed: " + this.counter + " number of tweets");
-        pool.destroy();
     }
 
     @Override
