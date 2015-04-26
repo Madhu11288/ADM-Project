@@ -20,7 +20,7 @@ public class PositionReportTable {
     }
 
     public void createPositionReportTable(String vehicleId,String time,String speed, String xWay,String lane,String dir,String segment, String position) {
-            IndexTask indexTask1 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_POSITION_REPORT_SET, "vehicleid",Constants.VEHICLE_ID_BIN, IndexType.STRING);
+            IndexTask indexTask1 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_POSITION_REPORT_SET, "vehicleid-PR",Constants.VEHICLE_ID_BIN, IndexType.STRING);
             indexTask1.waitTillComplete();
 
             Key key = new Key(Constants.AS_NAMESPACE, Constants.AS_POSITION_REPORT_SET, vehicleId );
@@ -35,17 +35,7 @@ public class PositionReportTable {
             this.client.put(writePolicy, key, bin0, bin1, bin2, bin3, bin4, bin5, bin6, bin7);
     }
 
-    public void createAccountBalanceTable() {
-        int vehicle_id = 1;
-        int time = 0;
-        int key_id;
-        key_id = vehicle_id + time;
-        Key key = new Key(Constants.AS_NAMESPACE, Constants.AS_ACCOUNT_BALANCE_SET, key_id);
-        Bin bin0 = new Bin(Constants.VEHICLE_ID_BIN, 1);
-        Bin bin1 = new Bin(Constants.TIME_BIN, 0);
-        Bin bin2 = new Bin(Constants.QUERY_ID_BIN, 116);
-        this.client.put(writePolicy, key, bin0, bin1, bin2);
-    }
+
 
 }
 

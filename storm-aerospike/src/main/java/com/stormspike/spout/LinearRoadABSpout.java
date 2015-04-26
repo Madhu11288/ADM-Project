@@ -1,28 +1,23 @@
 package com.stormspike.spout;
 
+
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.policy.RecordExistsAction;
-import com.aerospike.client.policy.WritePolicy;
-import com.stormspike.topology.Constants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-public class LinearRoadSpout implements IRichSpout {
+public class LinearRoadABSpout implements IRichSpout {
 
     SpoutOutputCollector _collector;
-    AerospikeClient aerospikeClient;
     BufferedReader br;
     Process process;
-    WritePolicy aerospikeWritePolicy;
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -37,15 +32,8 @@ public class LinearRoadSpout implements IRichSpout {
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         _collector = collector;
-
-        this.aerospikeClient = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
-        this.aerospikeWritePolicy = new WritePolicy();
-        this.aerospikeWritePolicy.maxRetries = 10;
-        this.aerospikeWritePolicy.recordExistsAction = RecordExistsAction.UPDATE;
-
-        String command = "/Users/madhushrees/ADM_/datadriver/datafeeder " +
-                "/Users/madhushrees/ADM_/datadriver/datafilesample.dat";
-
+        String command = "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-src/datafeeder " +
+                "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-test-data/datafile3hours.dat";
         try {
             process = Runtime.getRuntime().exec(command);
             br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -78,9 +66,8 @@ public class LinearRoadSpout implements IRichSpout {
         String line;
         try {
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("0")) {
+                if (line.startsWith("2"))
                     this._collector.emit(new Values(line));
-                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,3 +84,4 @@ public class LinearRoadSpout implements IRichSpout {
 
     }
 }
+

@@ -4,8 +4,8 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-import com.stormspike.bolt.AerospikeBolt;
-import com.stormspike.bolt.HashTagBolt;
+import com.stormspike.bolt.AerospikeHashTagBolt;
+import com.stormspike.bolt.AerospikeTweetsBolt;
 import com.stormspike.spout.TwitterSpout;
 
 public class TweetsTopology {
@@ -24,12 +24,11 @@ public class TweetsTopology {
         
         builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
                 accessToken, accessTokenSecret));
-        builder.setBolt("HashTagBolt", new HashTagBolt(AEROSPIKE_NS, AEROSPIKE_HASHTAGSET))
+        builder.setBolt("HashTagBolt", new AerospikeHashTagBolt(AEROSPIKE_NS, AEROSPIKE_HASHTAGSET))
                 .shuffleGrouping("twitter");
-        builder.setBolt("AerospikeBolt", new AerospikeBolt(AEROSPIKE_NS, AEROSPIKE_STORMSET))
+        builder.setBolt("AerospikeBolt", new AerospikeTweetsBolt(AEROSPIKE_NS, AEROSPIKE_STORMSET))
                 .shuffleGrouping("twitter");
 
-                
         Config conf = new Config();
         LocalCluster cluster = new LocalCluster();
         
