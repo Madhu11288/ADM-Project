@@ -24,3 +24,6 @@ linearroad-storm-redis/.idea/*
 linearroad-storm-redis/target/*
 sample-utilities/.idea/misc.xml
 sample-utilities/.idea/workspace.xml
+twitter-storm-redis-aerospike/.idea/*
+twitter-storm-redis-aerospike/target/*
+twitter-storm-redis-aerospike/redis-storm.iml
