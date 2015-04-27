@@ -15,11 +15,11 @@ public class AverageSpeedTable {
     public AverageSpeedTable(){
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
-        writePolicy.expiration = 10;
+//        writePolicy.expiration = 10;
     }
 
     public void writeAverageSpeedOfVehicle(String currentSpeed,String vehicleId, String time){
-        IndexTask indexTask = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_AVG_SPEED_SET, "vehicleid2",Constants.VEHICLE_ID_BIN, IndexType.STRING);
+        IndexTask indexTask = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_AVG_SPEED_SET, "vehicleid-ASpeed",Constants.VEHICLE_ID_BIN, IndexType.STRING);
         indexTask.waitTillComplete();
 
         float averageSpeed = 0;

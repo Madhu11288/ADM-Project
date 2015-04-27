@@ -17,6 +17,7 @@ public class Constants {
     public static final String VEHICLE_ID_BIN = "vehicleID";
     public static final String AVERAGE_SPEED_BIN = "avgSpeed";
     public static final String VEHICLE_LIST_BIN = "vehicleList";
+    public static final String ACCOUNT_BALANCE_BIN = "accountBalance";
 
     public static final String AS_NAMESPACE = "linear_road_bmrk";
     public static final String AS_POSITION_REPORT_SET = "position_reports";
