@@ -36,7 +36,7 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
+redis = r.StrictRedis(host='10.0.0.3', port=6379, db=0)
 
 
 def trending_hash_tags_redis():
@@ -88,42 +88,47 @@ def tweets_sliding_window_aerospike():
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
 
-def tweets_sliding_window():
-    two_mins_mills = 5 * 60 * 1000
+def tweets_sliding_window_redis():
+    two_mins_mills = 2 * 60 * 1000
     current_time_milliseconds = time.time() * 1000
-    time1 = current_time_milliseconds - two_mins_mills - 30
+
+    time1 = current_time_milliseconds - two_mins_mills - (5 * 1000)
     time2 = current_time_milliseconds - two_mins_mills
 
-    tweet_ids = redis.zrangebyscore("tweet-time-series", round(current_time_milliseconds - two_mins_mills), round(current_time_milliseconds))
+    tweet_ids = redis.zrangebyscore("tweet-time-series", round(time1), round(time2))
 
     tweets_data = redis.mget(tweet_ids)
-    print(len(tweets_data))
+    # print("Tweets length: " + str(len(tweets_data)))
     tweets = ""
     for tweet in tweets_data:
         tweets = tweets + str(tweet) + "|%*%|"
+
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
-
-@app.route('/trending-hashtags')
-def show_trending_hashtags():
-    return render_template("trending_hashtags.html")
 
 @app.route('/')
 def show_homepage():
     return render_template("index.html")
 
+@app.route('/trending-hashtags')
+def show_trending_hashtags():
+    return render_template("trending_hashtags.html")
+
+@app.route('/tweets-time-series')
+def show_tweets_timeseries():
+    return render_template("tweets_time_series.html")
+
 @app.route('/redis-hashtags-stream')
 def redis_trending_stream():
     return Response(trending_hash_tags_redis(), mimetype="text/event-stream")
 
-@app.route('/aerospike-hashtags-stream')
-def aerospike_trending_stream():
-    return Response(trending_hash_tags_aerospike(), mimetype="text/event-stream")
+# @app.route('/aerospike-hashtags-stream')
+# def aerospike_trending_stream():
+#     return Response(trending_hash_tags_aerospike(), mimetype="text/event-stream")
 
-# @app.route('/tweets-stream')
-# def tweets_stream():
-#     return Response(tweets_sliding_window(), mimetype="text/event-stream")
-#
+@app.route('/redis-tweets-stream')
+def tweets_stream():
+    return Response(tweets_sliding_window_redis(), mimetype="text/event-stream")
 
 if __name__ == '__main__':
     app.run(threaded=True,

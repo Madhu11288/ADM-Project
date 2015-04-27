@@ -26,7 +26,7 @@ public class TweetBolt implements IRichBolt{
 //        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
 //        jedis = new JedisCluster(jedisClusterNodes);
-        this.jedis = new Jedis("10.0.0.29");
+        this.jedis = new Jedis("10.0.0.3");
         this.counter = 0;
     }
 
@@ -62,12 +62,17 @@ public class TweetBolt implements IRichBolt{
         }
 
         jedis.hmset("tweet:" + tweetId, hMap);
-        jedis.set("tweet-id:" + tweetId, tweet.getText());
-        jedis.expire("tweet-id:" + tweetId, 7 * 60);
+
+        String tweetModified = tweet.getText().replaceAll("\n", " ");
+        jedis.set("tweet-id:" + tweetId, tweetModified);
+        jedis.expire("tweet-id:" + tweetId, 5 * 60);
+
         jedis.zadd("tweet-time-series", time_mills, "tweet-id:" + tweetId);
+
         Long currentTime = new Date().getTime();
         Long tenMinutes = (long) (10 * 60 * 1000);
         jedis.zremrangeByScore("tweet-time-series", 0, currentTime - tenMinutes);
+
         counter++;
     }
 

@@ -89,7 +89,7 @@ aerospikeHashTags.onmessage = function (event) {
             .enter().append("text")
             .style("font-size", function (d) {
                 var pixel = (600 * d.size) / 500;
-                return  pixel + "px";
+                return  50 + "px";
             })
             .style("font-family", "Impact")
             .style("fill", function (d, i) {

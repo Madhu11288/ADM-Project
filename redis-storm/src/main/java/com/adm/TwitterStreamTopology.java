@@ -27,10 +27,10 @@ public class TwitterStreamTopology {
 //        topologyBuilder.setBolt("Retweets", new ReTweetBolt(), 1).allGrouping("Streams");
 
         //Aerospike Bolt
-        topologyBuilder.setBolt("AerospikeHashTagBolt", new AerospikeHashTagBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_HASHTAGSET))
-                .shuffleGrouping("Streams");
-        topologyBuilder.setBolt("AerospikeTweetsBolt", new AerospikeTweetsBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_STORMSET))
-                .shuffleGrouping("Streams");
+//        topologyBuilder.setBolt("AerospikeHashTagBolt", new AerospikeHashTagBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_HASHTAGSET))
+//                .shuffleGrouping("Streams");
+//        topologyBuilder.setBolt("AerospikeTweetsBolt", new AerospikeTweetsBolt(AerospikeConstants.AS_TEST_NS, AerospikeConstants.AS_STORMSET))
+//                .shuffleGrouping("Streams");
 
         Config conf = new Config();
         LocalCluster cluster = new LocalCluster();
