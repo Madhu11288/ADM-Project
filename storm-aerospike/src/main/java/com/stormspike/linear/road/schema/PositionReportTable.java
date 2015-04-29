@@ -17,6 +17,7 @@ public class PositionReportTable {
     public PositionReportTable() {
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
+        writePolicy.expiration = 10;
     }
 
     public void createPositionReportTable(String vehicleId,String time,String speed, String xWay,String lane,String dir,String segment, String position) {

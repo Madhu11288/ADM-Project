@@ -19,6 +19,7 @@ public class VehicleInLastFiveMinsTable {
     public VehicleInLastFiveMinsTable() {
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
+        writePolicy.expiration = 10;
     }
 
     public void writeVehicleList(String xWay, String lane, String direction, String segment, String vehicleId,String time) {
