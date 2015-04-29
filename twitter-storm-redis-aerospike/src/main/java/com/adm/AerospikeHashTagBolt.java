@@ -58,7 +58,7 @@ public class AerospikeHashTagBolt extends BaseRichBolt {
         //create a set to hold the hashtags so that duplicate hashtags inthe same tweet is eliminated
         if (htEntity.length > 0) {
             for (HashtagEntity ht : htEntity) {
-                Key key = new Key(this.namespace, this.set, Value.get(ht.getText()));
+                Key key = new Key(this.namespace, this.set, Value.get(ht.getText().toLowerCase()));
                 Record record = this.aerospikeClient.get(this.aerospikeWritePolicy, key);
                 Bin bin0 = new Bin(TWEET_HASHTAG_BIN, Value.get(ht.getText()));
                 Bin bin1;
