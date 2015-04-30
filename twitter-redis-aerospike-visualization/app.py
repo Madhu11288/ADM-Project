@@ -62,7 +62,8 @@ def trending_hash_tags_aerospike():
     trending_hashtags = ""
     for line in results:
         for i in range(0, 10):
-            print(str(line[i][TWEET_HASHTAG_BIN]) + "-" + str(line[i][TWEET_COUNT]))
+            pass
+            #print(str(line[i][TWEET_HASHTAG_BIN]) + "-" + str(line[i][TWEET_COUNT]))
             result = str(line[i][TWEET_HASHTAG_BIN]) + "|" + str(line[i][TWEET_COUNT]) + "|%*%|"
             trending_hashtags += result
 
@@ -76,11 +77,11 @@ def tweets_sliding_window_aerospike():
 
     query = client.query(AEROSPIKE_NAMESPACE, AEROSPIKE_STORMSET)
     query.select(USER_NAME_BIN, TWEET_TEXT_BIN, TWEET_DATETIME_BIN)
-    query.where(p.between(TWEET_DATETIME_BIN, str(time1), str(time2)))
+    query.where( p.between(TWEET_DATETIME_BIN, int(time1), int(time2) ) )
     results = query.results()
     tweets = ""
     for line in results:
-        tweets = tweets + str(line['userName']) + " - " + str(line['tweetText']) + " -- " + str(line['tweetDateTime']) + "|%*%|"
+        tweets = tweets + ' '.join(line[2]['userName']).encode('utf-8').strip() + " - " + ' '.join(line[2]['tweetText']).encode('utf-8').strip() + " -- " + str(line[2]['tweetDateTime']) + "|%*%|"
 
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
