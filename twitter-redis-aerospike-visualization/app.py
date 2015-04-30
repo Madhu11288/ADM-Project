@@ -36,7 +36,11 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-redis = r.StrictRedis(host='10.0.0.3', port=6379, db=0)
+redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
+
+time_interval_mins_mills = 2 * 60 * 1000
+time_interval = 1 * 1000
+
 
 
 def trending_hash_tags_redis():
@@ -48,10 +52,6 @@ def trending_hash_tags_redis():
         result = str(key) + "|" + str(value) + "|%*%|"
         trending_hashtags += result
     yield 'data: %s\n\n' % trending_hashtags[0:(len(trending_hashtags)-5)]
-
-
-def print_sliding_window_result(key, metadata, record):
-    print(str(record['userName']) + " - " + str(record['tweetText']) + " -- " + str(record['tweetDateTime']))
 
 
 def trending_hash_tags_aerospike():
@@ -70,35 +70,28 @@ def trending_hash_tags_aerospike():
 
 
 def tweets_sliding_window_aerospike():
-    two_mins_mills = 5 * 60 * 1000
     current_time_milliseconds = time.time() * 1000
-    print(current_time_milliseconds)
-    time1 = current_time_milliseconds - two_mins_mills - 30
-    time2 = current_time_milliseconds - two_mins_mills
-    print("get_tweets_in_timeframe from " + str(time1) + " to " + str(time2))
+    time1 = round(current_time_milliseconds - time_interval_mins_mills - time_interval)
+    time2 = round(current_time_milliseconds - time_interval_mins_mills)
+
     query = client.query(AEROSPIKE_NAMESPACE, AEROSPIKE_STORMSET)
     query.select(USER_NAME_BIN, TWEET_TEXT_BIN, TWEET_DATETIME_BIN)
-    query.where(p.between(TWEET_DATETIME_BIN, time1, time1))
+    query.where(p.between(TWEET_DATETIME_BIN, str(time1), str(time2)))
     results = query.results()
     tweets = ""
     for line in results:
-        print(str(line['userName']) + " - " + str(line['tweetText']) + " -- " + str(line['tweetDateTime']))
         tweets = tweets + str(line['userName']) + " - " + str(line['tweetText']) + " -- " + str(line['tweetDateTime']) + "|%*%|"
 
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
 
 def tweets_sliding_window_redis():
-    two_mins_mills = 2 * 60 * 1000
     current_time_milliseconds = time.time() * 1000
+    time1 = round(current_time_milliseconds - time_interval_mins_mills - time_interval)
+    time2 = round(current_time_milliseconds - time_interval_mins_mills)
 
-    time1 = current_time_milliseconds - two_mins_mills - (5 * 1000)
-    time2 = current_time_milliseconds - two_mins_mills
-
-    tweet_ids = redis.zrangebyscore("tweet-time-series", round(time1), round(time2))
-
+    tweet_ids = redis.zrangebyscore("tweet-time-series", time1, time2)
     tweets_data = redis.mget(tweet_ids)
-    # print("Tweets length: " + str(len(tweets_data)))
     tweets = ""
     for tweet in tweets_data:
         tweets = tweets + str(tweet) + "|%*%|"
@@ -122,13 +115,17 @@ def show_tweets_timeseries():
 def redis_trending_stream():
     return Response(trending_hash_tags_redis(), mimetype="text/event-stream")
 
-# @app.route('/aerospike-hashtags-stream')
-# def aerospike_trending_stream():
-#     return Response(trending_hash_tags_aerospike(), mimetype="text/event-stream")
+@app.route('/aerospike-hashtags-stream')
+def aerospike_trending_stream():
+    return Response(trending_hash_tags_aerospike(), mimetype="text/event-stream")
 
 @app.route('/redis-tweets-stream')
-def tweets_stream():
+def redis_tweets_stream():
     return Response(tweets_sliding_window_redis(), mimetype="text/event-stream")
+
+@app.route('/aerospike-tweets-stream')
+def aerospike_tweets_stream():
+    return Response(tweets_sliding_window_aerospike(), mimetype="text/event-stream")
 
 if __name__ == '__main__':
     app.run(threaded=True,

@@ -19,17 +19,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="tweets col-md-6">
-           <div class="viewport">
+        <div class="redis-tweets col-md-6">
+           <div class="redis-viewport">
                <svg id="redis-tweets-svg" width="600" height="500" style="padding-top: 10px"></svg>
            </div>
         </div>
-        <!--<div class="hash-tags col-md-6">-->
-            <!--<svg id="redis-hash-svg" width="600" height="500" style="padding-left: 10px"></svg>-->
-        <!--</div>-->
-        <!--<div class="hash-tags col-md-6">-->
-            <!--<svg id="aerospike-hash-svg" width="600" height="500" style="padding-left: 10px"></svg>-->
-        <!--</div>-->
+        <div class="aerospike-tweets col-md-6">
+           <div class="aerospike-viewport">
+               <svg id="aerospike-tweets-svg" width="600" height="500" style="padding-top: 10px"></svg>
+           </div>
+        </div>
     </div>
 </div>
 
@@ -38,6 +37,6 @@
 <script src="/static/d3/virtualscroller.js"></script>
 <script src="/static/jquery/jquery-1.11.2.min.js"></script>
 <script src="/static/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-<script src="/static/js/tweets.js"></script>
+<script src="/static/js/sliding-window-tweets.js"></script>
 </body>
 </html>
