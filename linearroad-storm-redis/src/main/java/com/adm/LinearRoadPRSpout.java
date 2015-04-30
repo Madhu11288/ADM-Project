@@ -35,8 +35,8 @@ public class LinearRoadPRSpout implements IRichSpout {
     @Override
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         _collector = collector;
-        String command = "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-src/datafeeder " +
-                "/Users/sharanyabathey/courses/mcs-spring2015/advn_data_management/project/benchmarks/linear_road/datadriver-test-data/datafile3hours.dat";
+        String command = "/home/darshan/Downloads/datadriver/datafeeder " +
+                "/home/darshan/mitsim/output/cardatapoints.out";
         try {
             process = Runtime.getRuntime().exec(command);
             br = new BufferedReader(new InputStreamReader(process.getInputStream()));

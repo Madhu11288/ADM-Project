@@ -7,6 +7,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class PositionReportBolt implements IRichBolt{
@@ -14,6 +17,8 @@ public class PositionReportBolt implements IRichBolt{
     OutputCollector outputCollector;
 //    JedisCluster jedis;
     Jedis jedis;
+    File file;
+    PrintWriter writer;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -24,7 +29,12 @@ public class PositionReportBolt implements IRichBolt{
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
 //        jedis = new JedisCluster(jedisClusterNodes);
-
+        file = new File("/tmp/positionReport");
+        try {
+            writer = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -40,8 +50,10 @@ public class PositionReportBolt implements IRichBolt{
             String direction = values[6];
             String segment = values[7];
             String position = values[8];
-
-            System.out.println("Processing: " + vehicleID + " at time " + values[1]);
+            synchronized (this) {
+                writer.println("Processing: " + vehicleID + " at time " + values[1]);
+                writer.flush();
+            }
 
             String vehiclePositionReportKey = "position-report:vehicle-id:" + vehicleID;
             HashMap<String, String> positionReport = new HashMap<String, String>();
@@ -90,7 +102,8 @@ public class PositionReportBolt implements IRichBolt{
                         Float avgSpeedForFiveMinutes = new Float(0.0);
                         for (String segmentKey : segmentKeys) {
                             List<String> vehicleIds = jedis.lrange(segmentKey, 0, -1);
-                            System.out.println(vehicleIds);
+                            //writer.println(vehicleIds);
+                            //writer.flush();
                             Float avgSpeedForThisMinute = new Float(0.0);
                             for (String vehicleId : vehicleIds) {
                                 avgSpeedForThisMinute += Float.parseFloat(jedis.get(vehicleId));
@@ -102,7 +115,8 @@ public class PositionReportBolt implements IRichBolt{
                         }
 
                         if (avgSpeedForFiveMinutes < 40) {
-                            System.out.println("Tolling for Vehicle: " + vehicleID);
+                            //writer.println("Tolling for Vehicle: " + vehicleID);
+                            //writer.flush();
                             Integer toll = (int) (2 * Math.pow((vehicleIdsForLastMinute.size() - 50), 2));
                             jedis.incrBy(vehicleAccountBalanceKey, toll);
                         }

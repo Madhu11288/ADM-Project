@@ -6,17 +6,16 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-public class LinearRoadABSpout implements IRichSpout {
+/**
+ * Created by darshan on 4/26/15.
+ */
+public class LinearRoadCommonSpout implements IRichSpout {
 
     SpoutOutputCollector _collector;
     BufferedReader br;
@@ -69,8 +68,8 @@ public class LinearRoadABSpout implements IRichSpout {
         String line;
         try {
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("2"))
-                    this._collector.emit(new Values(line));
+                System.out.println(line);
+                this._collector.emit(new Values(line));
             }
         } catch (IOException e) {
             e.printStackTrace();

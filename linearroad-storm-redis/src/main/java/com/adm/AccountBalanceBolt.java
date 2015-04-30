@@ -7,6 +7,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import redis.clients.jedis.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +20,8 @@ public class AccountBalanceBolt implements IRichBolt{
     OutputCollector outputCollector;
 //    JedisCluster jedis;
     Jedis jedis;
+    File file;
+    PrintWriter writer;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -27,6 +32,12 @@ public class AccountBalanceBolt implements IRichBolt{
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
 //        jedis = new JedisCluster(jedisClusterNodes);
+        file = new File("/tmp/accountBalance");
+        try {
+            writer = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -36,10 +47,11 @@ public class AccountBalanceBolt implements IRichBolt{
             String vehicleID = values[2];
             String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
             if (jedis.exists(vehicleAccountBalanceKey)) {
-                System.out.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+                writer.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
             } else {
-                System.out.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ":0");
+                writer.println("Account Balance: Time: " + values[1] + ", " +vehicleID + ":0");
             }
+        writer.flush();
     }
 
     @Override
