@@ -41,10 +41,8 @@ redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
 time_interval_mins_mills = 2 * 60 * 1000
 time_interval = 1 * 1000
 
-
-
 def trending_hash_tags_redis():
-    trending_hashtags_data = redis.zrange("trending-topics", -20, -1)
+    trending_hashtags_data = redis.zrange("trending-topics", -10, -1)
     trending_hashtags = ""
     for hashtag in trending_hashtags_data:
         key = hashtag.split(":")[1]
@@ -63,11 +61,30 @@ def trending_hash_tags_aerospike():
     for line in results:
         for i in range(0, 10):
             pass
-            #print(str(line[i][TWEET_HASHTAG_BIN]) + "-" + str(line[i][TWEET_COUNT]))
             result = str(line[i][TWEET_HASHTAG_BIN]) + "|" + str(line[i][TWEET_COUNT]) + "|%*%|"
             trending_hashtags += result
 
     yield 'data: %s\n\n' % trending_hashtags[0:(len(trending_hashtags)-5)]
+
+
+def tweets_sliding_window_redis():
+    current_time_milliseconds = time.time() * 1000
+    time1 = round(current_time_milliseconds - time_interval_mins_mills - time_interval)
+    time2 = round(current_time_milliseconds - time_interval_mins_mills)
+
+    tweet_ids = redis.zrangebyscore("tweet-time-series", time1, time2)
+    tweets_data = redis.mget(tweet_ids)
+    tweets_list = []
+    for tweet in tweets_data:
+        tweets_list.append(tweet)
+
+    tweets_list1 = sorted(tweets_list)
+
+    tweets = ""
+    for tweet in tweets_list1:
+        tweets = tweets + str(tweet) + "|%*%|"
+
+    yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
 
 def tweets_sliding_window_aerospike():
@@ -79,22 +96,14 @@ def tweets_sliding_window_aerospike():
     query.select(USER_NAME_BIN, TWEET_TEXT_BIN, TWEET_DATETIME_BIN)
     query.where( p.between(TWEET_DATETIME_BIN, int(time1), int(time2) ) )
     results = query.results()
-    tweets = ""
+    tweets_list = []
     for line in results:
-        tweets = tweets + ' '.join(line[2]['userName']).encode('utf-8').strip() + " - " + ' '.join(line[2]['tweetText']).encode('utf-8').strip() + " -- " + str(line[2]['tweetDateTime']) + "|%*%|"
+        tweets_list.append(line[2]['tweetText'])
 
-    yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
+    tweets_list1 = sorted(tweets_list)
 
-
-def tweets_sliding_window_redis():
-    current_time_milliseconds = time.time() * 1000
-    time1 = round(current_time_milliseconds - time_interval_mins_mills - time_interval)
-    time2 = round(current_time_milliseconds - time_interval_mins_mills)
-
-    tweet_ids = redis.zrangebyscore("tweet-time-series", time1, time2)
-    tweets_data = redis.mget(tweet_ids)
     tweets = ""
-    for tweet in tweets_data:
+    for tweet in tweets_list1:
         tweets = tweets + str(tweet) + "|%*%|"
 
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
