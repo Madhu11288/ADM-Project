@@ -24,7 +24,7 @@ USER_NAME_BIN = "userName"
 # Aerospike
 config = {
     'hosts': [
-        ('10.0.0.29', 3000)
+        ('127.0.0.1', 3000)
     ],
     'policies': {
         'timeout': 1000
@@ -36,7 +36,7 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
+redis = r.StrictRedis(host='127.0.0.1', port=6379, db=0)
 
 time_interval_mins_mills = 2 * 60 * 1000
 time_interval = 1 * 1000
@@ -73,16 +73,18 @@ def tweets_sliding_window_redis():
     time2 = round(current_time_milliseconds - time_interval_mins_mills)
 
     tweet_ids = redis.zrangebyscore("tweet-time-series", time1, time2)
-    tweets_data = redis.mget(tweet_ids)
-    tweets_list = []
-    for tweet in tweets_data:
-        tweets_list.append(tweet)
-
-    tweets_list1 = sorted(tweets_list)
 
     tweets = ""
-    for tweet in tweets_list1:
-        tweets = tweets + str(tweet) + "|%*%|"
+    if len(tweet_ids) > 0:
+        tweets_data = redis.mget(tweet_ids)
+        tweets_list = []
+        for tweet in tweets_data:
+            tweets_list.append(tweet)
+
+        tweets_list1 = sorted(tweets_list)
+
+        for tweet in tweets_list1:
+            tweets = tweets + str(tweet) + "|%*%|"
 
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
