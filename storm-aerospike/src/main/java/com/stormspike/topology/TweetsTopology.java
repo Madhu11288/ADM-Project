@@ -24,6 +24,7 @@ public class TweetsTopology {
         
         builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
                 accessToken, accessTokenSecret));
+
         builder.setBolt("HashTagBolt", new AerospikeHashTagBolt(AEROSPIKE_NS, AEROSPIKE_HASHTAGSET))
                 .shuffleGrouping("twitter");
         builder.setBolt("AerospikeBolt", new AerospikeTweetsBolt(AEROSPIKE_NS, AEROSPIKE_STORMSET))

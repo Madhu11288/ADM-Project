@@ -84,7 +84,7 @@ public class AerospikeTweetsBolt extends BaseRichBolt {
 
         Bin bin0 = new Bin(TWEET_ID_BIN, Value.get(status.getId()));
         Bin bin1 = new Bin(USER_NAME_BIN, Value.get(status.getUser().getName()));
-        Bin bin2 = new Bin(TWEET_TEXT_BIN, Value.get(status.getText()));
+        Bin bin2 = new Bin(TWEET_TEXT_BIN, Value.get(status.getText().replaceAll("\n", " ")));
         Bin bin3 = new Bin(TWEET_LOCATION_BIN, Value.get(geoLoc));
         //Bin bin4 = new Bin(TWEET_DATETIME_BIN, Value.get(status.getCreatedAt().toString()));
 

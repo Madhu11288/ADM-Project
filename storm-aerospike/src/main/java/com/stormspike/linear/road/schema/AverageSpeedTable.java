@@ -15,7 +15,7 @@ public class AverageSpeedTable {
     public AverageSpeedTable(){
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
-//        writePolicy.expiration = 10;
+        writePolicy.expiration = 10;
     }
 
     public void writeAverageSpeedOfVehicle(String currentSpeed,String vehicleId, String time){
