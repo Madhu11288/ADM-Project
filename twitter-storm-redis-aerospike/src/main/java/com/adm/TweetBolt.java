@@ -26,7 +26,7 @@ public class TweetBolt implements IRichBolt{
 //        Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.100", 7000));
 //        jedis = new JedisCluster(jedisClusterNodes);
-        this.jedis = new Jedis("10.0.0.3");
+        this.jedis = new Jedis("127.0.0.1");
         this.counter = 0;
     }
 
