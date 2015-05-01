@@ -6,7 +6,6 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 import com.stormspike.linear.road.schema.AccountBalanceTable;
 import com.stormspike.linear.road.schema.AverageSpeedTable;
 import com.stormspike.linear.road.schema.PositionReportTable;
@@ -14,7 +13,7 @@ import com.stormspike.linear.road.schema.VehicleInLastFiveMinsTable;
 
 import java.util.Map;
 
-public class LinearRoadBolt extends BaseRichBolt {
+public class PositionReportBolt extends BaseRichBolt {
 
     private OutputCollector outputCollector;
     PositionReportTable positionReportTable;
@@ -43,18 +42,13 @@ public class LinearRoadBolt extends BaseRichBolt {
         String direction = values[6];
         String segment = values[7];
         String position = values[8];
-        String queryId = values[9];
+//        String queryId = values[9];
 
-        if (((String) input.getValue(0)).startsWith("0")) {
-            this.positionReportTable.createPositionReportTable(vehicleID, minute, speed, xWay, lane, direction, segment, position);
-            this.averageSpeedTable.writeAverageSpeedOfVehicle(speed, vehicleID, minute);
-            this.vehicleInLastFiveMinsTable.writeVehicleList(xWay, lane, direction, segment, vehicleID, minute);
-        } else if (((String) input.getValue(0)).startsWith("2")) {
-            this.accountBalanceTable.createAccountBalanceTable(vehicleID, minute, queryId);
-            float tollCost = this.vehicleInLastFiveMinsTable.getTollCost(xWay, lane, direction, segment, vehicleID, minute);
-            this.accountBalanceTable.updateAccountBalance(vehicleID, tollCost);
-
-        }
+        this.positionReportTable.createPositionReportTable(vehicleID, minute, speed, xWay, lane, direction, segment, position);
+        this.averageSpeedTable.writeAverageSpeedOfVehicle(speed, vehicleID, minute);
+        this.vehicleInLastFiveMinsTable.writeVehicleList(xWay, lane, direction, segment, vehicleID, minute);
+        float tollCost = this.vehicleInLastFiveMinsTable.getTollCost(xWay, lane, direction, segment, vehicleID, minute);
+        this.accountBalanceTable.updateAccountBalance(vehicleID, tollCost);
     }
 
     @Override

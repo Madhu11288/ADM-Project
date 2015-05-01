@@ -78,9 +78,7 @@ public class LinearRoadSpout implements IRichSpout {
         String line;
         try {
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("0") ||line.startsWith("2")) {
                     this._collector.emit(new Values(line));
-                }
             }
         } catch (IOException e) {
             e.printStackTrace();

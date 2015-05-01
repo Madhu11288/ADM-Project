@@ -2,10 +2,13 @@ package com.stormspike.topology;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-import com.stormspike.bolt.AerospikeHashTagBolt;
-import com.stormspike.bolt.AerospikeTweetsBolt;
+import com.stormspike.bolt.*;
+import com.stormspike.spout.LinearRoadSpout;
 import com.stormspike.spout.TwitterSpout;
 
 public class TweetsTopology {
@@ -21,7 +24,7 @@ public class TweetsTopology {
         String accessTokenSecret = args[3];
 
         TopologyBuilder builder = new TopologyBuilder();
-        
+
         builder.setSpout("twitter", new TwitterSpout(consumerKey, consumerSecret,
                 accessToken, accessTokenSecret));
 
@@ -32,9 +35,9 @@ public class TweetsTopology {
 
         Config conf = new Config();
         LocalCluster cluster = new LocalCluster();
-        
+
         cluster.submitTopology("test", conf, builder.createTopology());
-        
+
         Utils.sleep(100000);
         cluster.shutdown();
     }

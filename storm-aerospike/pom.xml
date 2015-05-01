@@ -1,44 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>
-
 	<modelVersion>4.0.0</modelVersion>
-  <artifactId>storm-aerospike</artifactId>
+    <groupId>com.stormspike</groupId>
+    <artifactId>storm-aerospike</artifactId>
 	<packaging>jar</packaging>
-	<name>Storm Aerospike</name>
+	<name>storm-aerospike</name>
+    <version>1.0-SNAPSHOT</version>
+    <url>http://maven.apache.org</url>
 	<description>Components for Storm integration with Aerospike.</description>
 
-  <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <storm.version>0.8.2</storm.version>
-    <aerospike.client.version>3.0.6</aerospike.client.version>
-	</properties>
-
-  <repositories>
-    <!-- Maven Repository where Storm's binaries are made available -->
-    <repository>
-      <id>clojars</id>
-      <url>http://clojars.org/repo/</url>
-    </repository>
-  </repositories>
-
 	<dependencies>
-		<dependency>
-		  <groupId>storm</groupId>
-		  <artifactId>storm</artifactId>
-      <version>${storm.version}</version>
-		  <scope>compile</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-core</artifactId>
+            <version>0.9.3</version>
+            <scope>provided</scope>
+        </dependency>
+
     <!-- You need to install the Aerospike Client yourself: http://www.aerospike.com/client_downloads/ -->
 		<dependency>
 			<groupId>com.aerospike</groupId>
 			<artifactId>aerospike-client</artifactId>
 			<version>[3.0,)</version>
+            <type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -53,47 +37,61 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-				<descriptorRefs>  
-					<descriptorRef>jar-with-dependencies</descriptorRef>
-				</descriptorRefs>
-				<archive>
-					<manifest>
-						<mainClass>AerospikeRoundTripTest</mainClass>
-					</manifest>
-				</archive>
-				</configuration>
-			</plugin>
+    <build> <sourceDirectory>src/main/java</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass></mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>storm.contrib.aerospike.test.AerospikeRoundTripTest</mainClass>
-        </configuration>
-      </plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                    <includeProjectDependencies>true</includeProjectDependencies>
+                    <includePluginDependencies>false</includePluginDependencies>
+                    <classpathScope>compile</classpathScope>
+                    <!--<mainClass>${storm.topology}</mainClass>-->
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
