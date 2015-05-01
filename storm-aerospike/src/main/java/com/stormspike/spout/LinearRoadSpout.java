@@ -44,7 +44,7 @@ public class LinearRoadSpout implements IRichSpout {
         this.aerospikeWritePolicy.recordExistsAction = RecordExistsAction.UPDATE;
 
         String command = "/Users/madhushrees/ADM_/datadriver/datafeeder " +
-                "/Users/madhushrees/ADM_/datadriver/datafilesample.dat";
+                "/Users/madhushrees/ADM_/datadriver/datafile3hours.dat";
 
         try {
             process = Runtime.getRuntime().exec(command);

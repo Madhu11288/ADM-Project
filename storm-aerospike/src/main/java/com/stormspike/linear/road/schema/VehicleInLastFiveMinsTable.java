@@ -19,26 +19,26 @@ public class VehicleInLastFiveMinsTable {
     public VehicleInLastFiveMinsTable() {
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
-        writePolicy.expiration = 10;
+        writePolicy.expiration = 20;
     }
 
-    public void writeVehicleList(String xWay, String lane, String direction, String segment, String vehicleId,String time) {
-        IndexTask indexTask = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "vehicleid-Vlist",Constants.VEHICLE_ID_BIN, IndexType.STRING);
+    public void writeVehicleList(String xWay, String lane, String direction, String segment, String vehicleId, String time) {
+        IndexTask indexTask = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "vehicleid-Vlist", Constants.VEHICLE_ID_BIN, IndexType.STRING);
         indexTask.waitTillComplete();
 
-        IndexTask indexTask1 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "xWay",Constants.XWAY_BIN, IndexType.STRING);
+        IndexTask indexTask1 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "xWay", Constants.XWAY_BIN, IndexType.STRING);
         indexTask1.waitTillComplete();
 
-        IndexTask indexTask2 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "lane",Constants.LANE_BIN, IndexType.STRING);
+        IndexTask indexTask2 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "lane", Constants.LANE_BIN, IndexType.STRING);
         indexTask2.waitTillComplete();
 
-        IndexTask indexTask3 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "direction",Constants.DIRECTION_BIN, IndexType.STRING);
+        IndexTask indexTask3 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "direction", Constants.DIRECTION_BIN, IndexType.STRING);
         indexTask3.waitTillComplete();
 
-        IndexTask indexTask4 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "segment",Constants.SEGMENT_BIN, IndexType.STRING);
+        IndexTask indexTask4 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "segment", Constants.SEGMENT_BIN, IndexType.STRING);
         indexTask4.waitTillComplete();
 
-        IndexTask indexTask5 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "time",Constants.TIME_BIN, IndexType.STRING);
+        IndexTask indexTask5 = this.client.createIndex(writePolicy, Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, "time", Constants.TIME_BIN, IndexType.STRING);
         indexTask5.waitTillComplete();
 
         String keyId = xWay + lane + direction + segment + time;
@@ -51,22 +51,81 @@ public class VehicleInLastFiveMinsTable {
         Bin bin6;
 
         Record record = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, Value.get(keyId)), Constants.VEHICLE_LIST_BIN);
-        if(record!=null) {
+        if (record != null) {
             ArrayList<String> vehicleList = (ArrayList) record.getValue(Constants.VEHICLE_LIST_BIN);
             if (!vehicleList.contains(vehicleId)) {
                 vehicleList.add(vehicleId);
             }
             bin6 = new Bin(Constants.VEHICLE_LIST_BIN, Value.get(vehicleList));
             this.client.put(this.writePolicy, key, bin1, bin2, bin3, bin4, bin5, bin6);
-        } else{
+        } else {
             ArrayList<String> vehicleList = new ArrayList<String>();
             vehicleList.add(vehicleId);
-            bin6 = new Bin(Constants.VEHICLE_LIST_BIN,Value.get(vehicleList));
-            this.client.put(writePolicy, key,  bin1, bin2, bin3, bin4, bin5, bin6);
+            bin6 = new Bin(Constants.VEHICLE_LIST_BIN, Value.get(vehicleList));
+            this.client.put(writePolicy, key, bin1, bin2, bin3, bin4, bin5, bin6);
         }
     }
 
-    public float getTollCost(String xWay, String lane, String direction, String segment, String vehicleID, String minute) {
+    public float getTollCost(String currentXway, String currentLane, String currentDirection, String currentSegment, String currentVehicleID, String currentMinute) {
+        Float toll = (float) 0.0;
+        String positionReportKey = currentVehicleID;
+        Record positionReportRecord = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_POSITION_REPORT_SET, Value.get(positionReportKey)));
+
+        System.out.println("*****************************toll calculation");
+        if (positionReportRecord != null) {
+            System.out.println("positionReportRecord not NULL");
+            String xWayValue = positionReportRecord.getValue(Constants.XWAY_BIN).toString();
+            String laneValue = positionReportRecord.getValue(Constants.LANE_BIN).toString();
+            String directionValue = positionReportRecord.getValue(Constants.DIRECTION_BIN).toString();
+            String segmentValue = positionReportRecord.getValue(Constants.SEGMENT_BIN).toString();
+            if (!xWayValue.equals(currentXway) || !laneValue.equals(currentLane) || !directionValue.equals(currentDirection) || !segmentValue.equals(currentSegment)) {
+
+                String currentKeyId = currentXway + currentLane + currentDirection + currentSegment + currentMinute;
+                Record vehicleListRecord = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, Value.get(currentKeyId)), Constants.VEHICLE_LIST_BIN);
+                System.out.println("changed lanes" + currentKeyId);
+                if (vehicleListRecord != null) {
+                    ArrayList vehicleListforLastMinute = (ArrayList) vehicleListRecord.getValue(Constants.VEHICLE_LIST_BIN);
+                    int size = vehicleListforLastMinute.size();
+
+                    ArrayList<Float> avgSpeed = new ArrayList<>();
+                    float totalAvgSpeed = (float) 0.0;
+
+                    if (size > 50) {
+                        System.out.println("exceeded vehicle list 50");
+                        for (int i = 1; i <= 5; i++) {
+                            Integer time = Integer.parseInt(currentMinute) - i;
+                            String segmentKey = currentXway + currentLane + currentDirection + currentSegment + time;
+                            Record segmentRecord = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, Value.get(segmentKey)), Constants.VEHICLE_LIST_BIN);
+                            ArrayList<String> segmentVehicleList = (ArrayList) segmentRecord.getValue(Constants.VEHICLE_LIST_BIN);
+                            float lastFiveMinuteAvgSpeed = (float) 0.0;
+                            for (String vehicleId : segmentVehicleList) {
+                                String avgSpeedKeyId = vehicleId + String.valueOf(time);
+                                Record avgSpeedRecord = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_AVG_SPEED_SET, Value.get(avgSpeedKeyId)), Constants.AVERAGE_SPEED_BIN);
+                                lastFiveMinuteAvgSpeed += Float.parseFloat(avgSpeedRecord.getValue(Constants.AVERAGE_SPEED_BIN).toString());
+                            }
+                            lastFiveMinuteAvgSpeed = lastFiveMinuteAvgSpeed / segmentVehicleList.size();
+                            avgSpeed.add(lastFiveMinuteAvgSpeed);
+                        }
+
+                        for (int i = 0; i < 5; i++) {
+                            totalAvgSpeed += avgSpeed.get(i);
+                        }
+                        totalAvgSpeed = totalAvgSpeed / 5;
+                        System.out.println("Average Speed" +totalAvgSpeed);
+
+                        if (totalAvgSpeed < 40) {
+                            toll = (float) (2 * Math.pow((size - 50), 2));
+                        }
+                    }
+                }
+            }
+
+        }
+        System.out.println("Toll "+toll);
+        return toll;
+    }
+
+    public float getTollCost1(String xWay, String lane, String direction, String segment, String vehicleID, String minute) {
         Float toll = (float) 0.0;
         String keyId = xWay + lane + direction + segment + minute;
         Record record = this.client.get(this.writePolicy, new Key(Constants.AS_NAMESPACE, Constants.AS_VEHICLE_LIST_SET, Value.get(keyId)), Constants.VEHICLE_LIST_BIN);

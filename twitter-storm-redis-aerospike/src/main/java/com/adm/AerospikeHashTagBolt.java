@@ -60,7 +60,7 @@ public class AerospikeHashTagBolt extends BaseRichBolt {
             for (HashtagEntity ht : htEntity) {
                 Key key = new Key(this.namespace, this.set, Value.get(ht.getText().toLowerCase()));
                 Record record = this.aerospikeClient.get(this.aerospikeWritePolicy, key);
-                Bin bin0 = new Bin(TWEET_HASHTAG_BIN, Value.get(ht.getText()));
+                Bin bin0 = new Bin(TWEET_HASHTAG_BIN, Value.get(ht.getText().toLowerCase()));
                 Bin bin1;
                 if (record == null) {
                     bin1 = new Bin(TWEET_COUNT, 1);

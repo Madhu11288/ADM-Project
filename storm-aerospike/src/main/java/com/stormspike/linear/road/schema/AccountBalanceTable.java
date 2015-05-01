@@ -15,7 +15,6 @@ public class AccountBalanceTable {
     public AccountBalanceTable() {
         client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
         writePolicy = new WritePolicy();
-        writePolicy.expiration = 10;
     }
 
     public void createAccountBalanceTable(String vehicleId,String time,String queryId) {
