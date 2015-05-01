@@ -24,7 +24,7 @@ USER_NAME_BIN = "userName"
 # Aerospike
 config = {
     'hosts': [
-        ('127.0.0.1', 3000)
+        ('10.0.0.29', 3000)
     ],
     'policies': {
         'timeout': 1000
@@ -36,10 +36,10 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-redis = r.StrictRedis(host='127.0.0.1', port=6379, db=0)
+redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
 
 time_interval_mins_mills = 2 * 60 * 1000
-time_interval = 1 * 1000
+time_interval = 10 * 1000
 
 def trending_hash_tags_redis():
     trending_hashtags_data = redis.zrange("trending-topics", -10, -1)

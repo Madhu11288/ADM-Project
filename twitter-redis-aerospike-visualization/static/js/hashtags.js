@@ -1,7 +1,7 @@
 var redisHashTags = new EventSource('/redis-hashtags-stream');
 var aerospikeHashTags = new EventSource('/aerospike-hashtags-stream');
-//var tweets = new EventSource('/tweets-stream');
 
+var maxSize = 100;
 
 redisHashTags.onmessage = function (event) {
     var fill = d3.scale.category20();
@@ -38,7 +38,8 @@ redisHashTags.onmessage = function (event) {
             .enter().append("text")
             .style("font-size", function (d) {
                 var pixel = (600 * d.size) / 500;
-                return  pixel + "px";
+                var size = maxSize > pixel ? pixel : maxSize;
+                return  size + "px";
             })
             .style("font-family", "Impact")
             .style("fill", function (d, i) {
@@ -89,7 +90,8 @@ aerospikeHashTags.onmessage = function (event) {
             .enter().append("text")
             .style("font-size", function (d) {
                 var pixel = (600 * d.size) / 500;
-                return  50 + "px";
+                var size = maxSize > pixel ? pixel : maxSize;
+                return  size + "px";
             })
             .style("font-family", "Impact")
             .style("fill", function (d, i) {
