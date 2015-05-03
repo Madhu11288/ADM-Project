@@ -6,10 +6,15 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
+import com.aerospike.client.policy.WritePolicy;
 import com.stormspike.linear.road.schema.AccountBalanceTable;
 import com.stormspike.linear.road.schema.AverageSpeedTable;
 import com.stormspike.linear.road.schema.PositionReportTable;
 import com.stormspike.linear.road.schema.VehicleInLastFiveMinsTable;
+import com.stormspike.topology.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,8 +29,12 @@ public class PositionReportBolt extends BaseRichBolt {
     VehicleInLastFiveMinsTable vehicleInLastFiveMinsTable;
     AccountBalanceTable accountBalanceTable;
 
-    File file;
-    PrintWriter writer;
+    File positionReportFile;
+    PrintWriter positionReportWriter;
+    private File accountBalanceFile;
+    private PrintWriter accountBalanceWriter;
+    private AerospikeClient client;
+    private WritePolicy writePolicy;
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
@@ -35,9 +44,19 @@ public class PositionReportBolt extends BaseRichBolt {
         this.vehicleInLastFiveMinsTable = new VehicleInLastFiveMinsTable();
         this.accountBalanceTable = new AccountBalanceTable();
 
-        file = new File("/Users/madhushrees/ADM_/codeBase/ADM-Project/storm-aerospike/src/main/java/com/stormspike/results/position_reports.txt");
+        client = new AerospikeClient(Constants.AEROSPIKE_HOST, Constants.AEROSPIKE_PORT);
+        writePolicy = new WritePolicy();
+
+        positionReportFile = new File("/Users/madhushrees/ADM_/codeBase/ADM-Project/storm-aerospike/src/main/java/com/stormspike/results/position_reports.txt");
         try {
-            writer = new PrintWriter(file);
+            positionReportWriter = new PrintWriter(positionReportFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        accountBalanceFile = new File("/Users/madhushrees/ADM_/codeBase/ADM-Project/storm-aerospike/src/main/java/com/stormspike/results/ab.txt");
+        try {
+            accountBalanceWriter = new PrintWriter(accountBalanceFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -46,27 +65,39 @@ public class PositionReportBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple input) {
         String record = (String) input.getValue(0);
-        String[] values = record.split(",");
-        String minute = values[1];
-        String vehicleID = values[2];
-        String speed = values[3];
-        String xWay = values[4];
-        String lane = values[5];
-        String direction = values[6];
-        String segment = values[7];
-        String position = values[8];
-        String queryId = values[9];
+        if (record.startsWith("0")) {
+            String[] values = record.split(",");
+            String minute = Integer.toString((int) (Math.floor(Integer.parseInt(values[1]) / 60) + 1));
+            String vehicleID = values[2];
+            String speed = values[3];
+            String xWay = values[4];
+            String lane = values[5];
+            String direction = values[6];
+            String segment = values[7];
+            String position = values[8];
+            String queryId = values[9];
+            positionReportWriter.println("Processing: " + vehicleID + " at time " + values[1]);
+            positionReportWriter.flush();
 
-        synchronized (this) {
-            writer.println("Processing: " + vehicleID + " at time " + values[1]);
-            writer.flush();
+            this.positionReportTable.createPositionReportTable(vehicleID, minute, speed, xWay, lane, direction, segment, position);
+            this.averageSpeedTable.writeAverageSpeedOfVehicle(speed, vehicleID, minute);
+            this.vehicleInLastFiveMinsTable.writeVehicleList(xWay, lane, direction, segment, vehicleID, minute);
+            float tollCost = this.vehicleInLastFiveMinsTable.getTollCost(xWay, lane, direction, segment, vehicleID, minute);
+            this.accountBalanceTable.updateAccountBalance(vehicleID, minute, queryId, tollCost);
+
+        } else if(record.startsWith("2")) {
+            String[] values = record.split(",");
+            String vehicleID = values[2];
+            Key vehicleAccountBalanceKey = new Key(Constants.AS_NAMESPACE, Constants.AS_ACCOUNT_BALANCE_SET, vehicleID);
+            if (this.client.exists(this.writePolicy,vehicleAccountBalanceKey)) {
+                Record abRecord = this.client.get(this.writePolicy, vehicleAccountBalanceKey, Constants.ACCOUNT_BALANCE_BIN);
+                String ab = abRecord.getValue(Constants.ACCOUNT_BALANCE_BIN).toString();
+                accountBalanceWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ": " + ab);
+            } else {
+                accountBalanceWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ":0");
+            }
+            accountBalanceWriter.flush();
         }
-
-        this.positionReportTable.createPositionReportTable(vehicleID, minute, speed, xWay, lane, direction, segment, position);
-        this.averageSpeedTable.writeAverageSpeedOfVehicle(speed, vehicleID, minute);
-        this.vehicleInLastFiveMinsTable.writeVehicleList(xWay, lane, direction, segment, vehicleID, minute);
-        float tollCost = this.vehicleInLastFiveMinsTable.getTollCost(xWay, lane, direction, segment, vehicleID, minute);
-        this.accountBalanceTable.updateAccountBalance(vehicleID, minute, queryId, tollCost);
 
     }
 
