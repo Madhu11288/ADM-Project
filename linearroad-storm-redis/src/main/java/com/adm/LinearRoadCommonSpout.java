@@ -68,10 +68,10 @@ public class LinearRoadCommonSpout implements IRichSpout {
         String line;
         try {
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
                 this._collector.emit(new Values(line));
+                Thread.sleep(5);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

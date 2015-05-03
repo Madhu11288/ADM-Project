@@ -12,13 +12,15 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class PositionReportBolt implements IRichBolt{
+public class PositionReportBolt implements IRichBolt {
 
     OutputCollector outputCollector;
-//    JedisCluster jedis;
+    //    JedisCluster jedis;
     Jedis jedis;
-    File file;
-    PrintWriter writer;
+    File positionFile;
+    File accountFile;
+    PrintWriter positionWriter;
+    PrintWriter accountWriter;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -29,9 +31,16 @@ public class PositionReportBolt implements IRichBolt{
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7001));
 //        jedisClusterNodes.add(new HostAndPort("10.0.0.30", 7002));
 //        jedis = new JedisCluster(jedisClusterNodes);
-        file = new File("/tmp/positionReport");
+        positionFile = new File("/tmp/positionReport");
         try {
-            writer = new PrintWriter(file);
+            positionWriter = new PrintWriter(positionFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        accountFile = new File("/tmp/accountBalance");
+        try {
+            accountWriter = new PrintWriter(accountFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -39,10 +48,10 @@ public class PositionReportBolt implements IRichBolt{
 
     @Override
     public void execute(Tuple input) {
-
-            String record = (String) input.getValue(0);
+        String record = (String) input.getValue(0);
+        if (record.startsWith("0")) {
             String[] values = record.split(",");
-            String minute = Integer.toString((int) (Math.floor(Integer.parseInt(values[1])/60) + 1));
+            String minute = Integer.toString((int) (Math.floor(Integer.parseInt(values[1]) / 60) + 1));
             String vehicleID = values[2];
             String speed = values[3];
             String xWay = values[4];
@@ -50,10 +59,8 @@ public class PositionReportBolt implements IRichBolt{
             String direction = values[6];
             String segment = values[7];
             String position = values[8];
-            synchronized (this) {
-                writer.println("Processing: " + vehicleID + " at time " + values[1]);
-                writer.flush();
-            }
+            positionWriter.println("Processing: " + vehicleID + " at time " + values[1]);
+            positionWriter.flush();
 
             String vehiclePositionReportKey = "position-report:vehicle-id:" + vehicleID;
             HashMap<String, String> positionReport = new HashMap<String, String>();
@@ -75,7 +82,7 @@ public class PositionReportBolt implements IRichBolt{
                 jedis.set(vehicleAvgSpeedKey, speed);
                 jedis.expire(vehicleAvgSpeedKey, 600);
             } else {
-                Float avgSpeed = (Float.parseFloat(jedis.get(vehicleAvgSpeedKey)) + Float.parseFloat(speed))/2;
+                Float avgSpeed = (Float.parseFloat(jedis.get(vehicleAvgSpeedKey)) + Float.parseFloat(speed)) / 2;
                 jedis.set(vehicleAvgSpeedKey, avgSpeed.toString());
             }
 
@@ -90,7 +97,7 @@ public class PositionReportBolt implements IRichBolt{
                         || !storedValues.get(2).equals(direction) || !storedValues.get(3).equals(segment)) {
 
                     ArrayList<String> segmentKeys = new ArrayList<String>();
-                    for(int i = 1; i <= 5; i++) {
+                    for (int i = 1; i <= 5; i++) {
                         Integer time = Integer.parseInt(minute) - i;
                         String segmentKey = "report:minute:" + time + ":xWay:" + xWay + ":lane:" + lane + ":direction:"
                                 + direction + ":segment:" + segment;
@@ -122,16 +129,25 @@ public class PositionReportBolt implements IRichBolt{
                         }
                     }
                 }
-
                 jedis.hmset(vehiclePositionReportKey, positionReport);
             }
-
             if (!jedis.exists(vehiclesCurrentSegmentKey)) {
                 jedis.lpush(vehiclesCurrentSegmentKey, vehicleAvgSpeedKey);
                 jedis.expire(vehiclesCurrentSegmentKey, 600);
             } else {
                 jedis.lpush(vehiclesCurrentSegmentKey, vehicleAvgSpeedKey);
             }
+        } else if (record.startsWith("2")) {
+            String[] values = record.split(",");
+            String vehicleID = values[2];
+            String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
+            if (jedis.exists(vehicleAccountBalanceKey)) {
+                accountWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+            } else {
+                accountWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ":0");
+            }
+            accountWriter.flush();
+        }
     }
 
     @Override
