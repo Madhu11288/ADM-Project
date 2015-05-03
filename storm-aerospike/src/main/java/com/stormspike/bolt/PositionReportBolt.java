@@ -11,6 +11,9 @@ import com.stormspike.linear.road.schema.AverageSpeedTable;
 import com.stormspike.linear.road.schema.PositionReportTable;
 import com.stormspike.linear.road.schema.VehicleInLastFiveMinsTable;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Map;
 
 public class PositionReportBolt extends BaseRichBolt {
@@ -21,6 +24,9 @@ public class PositionReportBolt extends BaseRichBolt {
     VehicleInLastFiveMinsTable vehicleInLastFiveMinsTable;
     AccountBalanceTable accountBalanceTable;
 
+    File file;
+    PrintWriter writer;
+
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.outputCollector = outputCollector;
@@ -28,6 +34,13 @@ public class PositionReportBolt extends BaseRichBolt {
         this.averageSpeedTable = new AverageSpeedTable();
         this.vehicleInLastFiveMinsTable = new VehicleInLastFiveMinsTable();
         this.accountBalanceTable = new AccountBalanceTable();
+
+        file = new File("/Users/madhushrees/ADM_/codeBase/ADM-Project/storm-aerospike/src/main/java/com/stormspike/results/position_reports.txt");
+        try {
+            writer = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -42,13 +55,19 @@ public class PositionReportBolt extends BaseRichBolt {
         String direction = values[6];
         String segment = values[7];
         String position = values[8];
-//        String queryId = values[9];
+        String queryId = values[9];
+
+        synchronized (this) {
+            writer.println("Processing: " + vehicleID + " at time " + values[1]);
+            writer.flush();
+        }
 
         this.positionReportTable.createPositionReportTable(vehicleID, minute, speed, xWay, lane, direction, segment, position);
         this.averageSpeedTable.writeAverageSpeedOfVehicle(speed, vehicleID, minute);
         this.vehicleInLastFiveMinsTable.writeVehicleList(xWay, lane, direction, segment, vehicleID, minute);
         float tollCost = this.vehicleInLastFiveMinsTable.getTollCost(xWay, lane, direction, segment, vehicleID, minute);
-        this.accountBalanceTable.updateAccountBalance(vehicleID, tollCost);
+        this.accountBalanceTable.updateAccountBalance(vehicleID, minute, queryId, tollCost);
+
     }
 
     @Override

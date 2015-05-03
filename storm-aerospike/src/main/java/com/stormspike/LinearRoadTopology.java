@@ -1,4 +1,4 @@
-package com.stormspike.topology;
+package com.stormspike;
 
 import backtype.storm.Config;
 import backtype.storm.StormSubmitter;
@@ -22,12 +22,12 @@ public class LinearRoadTopology {
         //topologyBuilder.setSpout("linear-road-AB", new LinearRoadABSpout(), 1);
         topologyBuilder.setBolt("splitterBolt", new SplitterBolt(), 1).shuffleGrouping("linear-road-PR");
         topologyBuilder.setBolt("query-0-PR", new PositionReportBolt(), 1).shuffleGrouping("splitterBolt", "positionReportStream").setNumTasks(1);
-        topologyBuilder.setBolt("query-2-AB", new AccountBalanceBolt(), 1).shuffleGrouping("splitterBolt", "accountBalanceStream");
+        topologyBuilder.setBolt("query-2-AB", new AccountBalanceBolt(), 1).shuffleGrouping("splitterBolt", "accountBalanceStream").setNumTasks(1);
 
         Config conf = new Config();
         conf.put(Config.NIMBUS_HOST, "localhost"); //YOUR NIMBUS'S IP
         conf.put(Config.NIMBUS_THRIFT_PORT, 6627);    //int is expected here
-        conf.setNumWorkers(1);
+        conf.setNumWorkers(4);
         try {
             StormSubmitter.submitTopology("test", conf, topologyBuilder.createTopology());
         } catch (AlreadyAliveException e) {
