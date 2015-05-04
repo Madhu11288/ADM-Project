@@ -24,7 +24,7 @@ USER_NAME_BIN = "userName"
 # Aerospike
 config = {
     'hosts': [
-        ('10.0.0.29', 3000)
+        ('127.0.0.1', 3000)
     ],
     'policies': {
         'timeout': 1000
@@ -36,7 +36,7 @@ config = {
 client = aerospike.client(config).connect()
 
 # Redis
-redis = r.StrictRedis(host='10.0.0.29', port=6379, db=0)
+redis = r.StrictRedis(host='127.0.0.1', port=6379, db=0)
 
 time_interval_mins_mills = 2 * 60 * 1000
 time_interval = 10 * 1000
@@ -60,8 +60,7 @@ def trending_hash_tags_aerospike():
     trending_hashtags = ""
     for line in results:
         for i in range(0, 10):
-            pass
-            result = str(line[i][TWEET_HASHTAG_BIN]) + "|" + str(line[i][TWEET_COUNT]) + "|%*%|"
+            result = ''.join((line[i][TWEET_HASHTAG_BIN])).encode('utf-8').strip() + "|" + str(line[i][TWEET_COUNT]) + "|%*%|"
             trending_hashtags += result
 
     yield 'data: %s\n\n' % trending_hashtags[0:(len(trending_hashtags)-5)]
@@ -106,7 +105,7 @@ def tweets_sliding_window_aerospike():
 
     tweets = ""
     for tweet in tweets_list1:
-        tweets = tweets + str(tweet) + "|%*%|"
+        tweets = tweets + ''.join(tweet).encode('utf-8').strip() + "|%*%|"
 
     yield 'data: %s\n\n' % tweets[0:(len(tweets)-4)]
 
