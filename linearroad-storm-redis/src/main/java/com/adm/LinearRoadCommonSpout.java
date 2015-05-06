@@ -35,7 +35,7 @@ public class LinearRoadCommonSpout implements IRichSpout {
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
         _collector = collector;
         String command = "/home/darshan/Downloads/datadriver/datafeeder " +
-                "/home/darshan/mitsim/output/cardatapoints.out";
+                "/home/darshan/mitsimmod/output/cardatapoints.out";
         try {
             process = Runtime.getRuntime().exec(command);
             br = new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -19,8 +19,14 @@ public class PositionReportBolt implements IRichBolt {
     Jedis jedis;
     File positionFile;
     File accountFile;
+    File accountTimeFile, positionTimeFile;
+    File timeDiffFile;
     PrintWriter positionWriter;
     PrintWriter accountWriter;
+    PrintWriter accountTime;
+    PrintWriter positionTime;
+    PrintWriter timeDiff;
+    long systemStartTime = -1;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -44,12 +50,42 @@ public class PositionReportBolt implements IRichBolt {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        accountTimeFile = new File("/tmp/accountTime");
+        try {
+            accountTime = new PrintWriter(accountTimeFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        positionTimeFile = new File("/tmp/positionFile");
+        try {
+            positionTime = new PrintWriter(positionTimeFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        timeDiffFile = new File("/tmp/timeDiffFile");
+        try {
+            timeDiff = new PrintWriter(timeDiffFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void execute(Tuple input) {
+        if(systemStartTime <= 0) {
+            if (systemStartTime == -1) {
+                systemStartTime = 0;
+            } else {
+                systemStartTime = System.currentTimeMillis();
+            }
+        }
+
         String record = (String) input.getValue(0);
         if (record.startsWith("0")) {
+            Long startTime = System.currentTimeMillis();
             String[] values = record.split(",");
             String minute = Integer.toString((int) (Math.floor(Integer.parseInt(values[1]) / 60) + 1));
             String vehicleID = values[2];
@@ -61,6 +97,8 @@ public class PositionReportBolt implements IRichBolt {
             String position = values[8];
             positionWriter.println("Processing: " + vehicleID + " at time " + values[1]);
             positionWriter.flush();
+
+            if(lane.equals("4")) return;
 
             String vehiclePositionReportKey = "position-report:vehicle-id:" + vehicleID;
             HashMap<String, String> positionReport = new HashMap<String, String>();
@@ -89,7 +127,9 @@ public class PositionReportBolt implements IRichBolt {
             if (!jedis.exists(vehiclePositionReportKey)) {
                 jedis.hmset(vehiclePositionReportKey, positionReport);
                 jedis.incrBy(vehicleAccountBalanceKey, 0);
+                jedis.set(vehicleAccountBalanceKey + ":time", values[1]);
             } else {
+                jedis.set(vehicleAccountBalanceKey + ":time", values[1]);
                 List<String> storedValues = jedis.hmget(vehiclePositionReportKey,
                         "xWay", "lane", "direction", "segment", "minute");
 
@@ -137,16 +177,38 @@ public class PositionReportBolt implements IRichBolt {
             } else {
                 jedis.lpush(vehiclesCurrentSegmentKey, vehicleAvgSpeedKey);
             }
+            Long endTime = System.currentTimeMillis();
+            Long time = endTime - startTime;
+            positionTime.println(time);
+            positionTime.flush();
         } else if (record.startsWith("2")) {
+            Long startTime = System.currentTimeMillis();
             String[] values = record.split(",");
             String vehicleID = values[2];
             String vehicleAccountBalanceKey = "account-balance:vehicle-id:" + vehicleID;
+            String accountBalanceTime = values[1];
+            if(jedis.get(vehicleAccountBalanceKey + ":time") != null)
+            {
+                accountBalanceTime = jedis.get(vehicleAccountBalanceKey + ":time");
+            }
+            Long timeOutputted = ((System.currentTimeMillis() - systemStartTime) / 1000);
+            timeDiff.println(timeOutputted - Long.parseLong(values[1]));
+            timeDiff.flush();
             if (jedis.exists(vehicleAccountBalanceKey)) {
-                accountWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+                //accountWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ": " + jedis.get(vehicleAccountBalanceKey));
+                accountWriter.println("2," + values[1] + "," + (timeOutputted) + "," + values[9] + "," +
+                                      jedis.get(vehicleAccountBalanceKey) + "," +
+                                      accountBalanceTime);
             } else {
-                accountWriter.println("Account Balance: Time: " + values[1] + ", " + vehicleID + ":0");
+                accountWriter.println("2," + values[1] + "," + (Integer.parseInt(values[1]) + 1) + "," + values[9] + "," +
+                        0 + "," +
+                        accountBalanceTime);
             }
             accountWriter.flush();
+            Long endTime = System.currentTimeMillis();
+            Long time = endTime - startTime;
+            accountTime.println(time);
+            accountTime.flush();
         }
     }
 

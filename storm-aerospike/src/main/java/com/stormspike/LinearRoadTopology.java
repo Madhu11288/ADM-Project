@@ -5,9 +5,7 @@ import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
-import com.stormspike.bolt.AccountBalanceBolt;
 import com.stormspike.bolt.PositionReportBolt;
-import com.stormspike.bolt.SplitterBolt;
 import com.stormspike.spout.LinearRoadSpout;
 
 public class LinearRoadTopology {
